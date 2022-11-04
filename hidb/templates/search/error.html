@@ -5,5 +5,11 @@
 {% endblock %}
 
 {% block content %}
-  {{ results }}
+  The search was unsuccessful:<br /><br />
+
+  {{ error }}
+
+  <br /><br />
+
+  <a class="action" href="{{ url_for('search.index') }}">Try Again</a>
 {% endblock %}

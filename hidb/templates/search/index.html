@@ -5,10 +5,32 @@
 {% endblock %}
 
 {% block content %}
+{% if locations|length < 1 %}
+You have not defined any locations yet.
+<A HREF="{{ url_for('locations.create') }}">Please do so first.</A>
+{% else %}
 <form action="{{ url_for('search.run_search') }}" method="post">
-  Search for stuff!
 
+  <label for="model_no">
+    <input type="checkbox" name="search_type" value="model_no">Make/Model:</label>
+  <input name="model_no" id="model_no">
+
+  <label for="description">
+    <input type="checkbox" name="search_type" value="description">Description:</label>
+  <input name="description" id="description">
+
+  <label for="location">
+    <input type="checkbox" name="search_type" value="location">Location(s):</label>
+  <select name="location" multiple>
+    {% for l in locations %}
+  <option value="{{ l.id }}">{{ l.description }}</option>
+  {% endfor %}
+
+  <label for="sublocation">
+    <input type="checkbox" name="search_type" value="sublocation">Sublocation:</label>
+  <input name="sublocation" id="sublocation">
 
   <input class="submit" type="submit" value="Search">
 </form>
+{% endif %}
 {% endblock %}
