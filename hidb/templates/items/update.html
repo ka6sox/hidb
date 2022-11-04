@@ -5,6 +5,10 @@
 {% endblock %}
 
 {% block content %}
+{% if locations|length < 1 %}
+You have not defined any locations yet.
+<A HREF="{{ url_for('locations.create') }}">Please do so first.</A>
+{% else %}
   <form method="post">
     <label for="model_no">Make/Model</label>
     <input name="model_no" id="model_no" value="{{ request.form['model_no'] or item['model_no'] }}" required>
@@ -29,4 +33,5 @@
   <form action="{{ url_for('items.delete', id=item['id']) }}" method="post">
     <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
   </form>
+{% endif %}
 {% endblock %}
