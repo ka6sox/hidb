@@ -12,3 +12,6 @@ bp = Blueprint('search', __name__)
 def index():
     return render_template('search/index.html')
 
+@bp.route('/search/run_search', methods=('GET', 'POST'))
+def run_search():
+    return render_template('search/results.html')

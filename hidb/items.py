@@ -19,7 +19,7 @@ def index():
     ).fetchall()
     return render_template('items/index.html', items=items)
 
-@bp.route('/create', methods=('GET', 'POST'))
+@bp.route('/items/create', methods=('GET', 'POST'))
 @login_required
 def create():
     locations = get_locations()
@@ -75,7 +75,7 @@ def get_item(id, check_author=True):
 
     return item
 
-@bp.route('/<int:id>/update', methods=('GET', 'POST'))
+@bp.route('/items/<int:id>/update', methods=('GET', 'POST'))
 @login_required
 def update(id):
     item = get_item(id)
@@ -115,7 +115,7 @@ def update(id):
 
     return render_template('items/update.html', item=item, locations=locations)
 
-@bp.route('/<int:id>/delete', methods=('POST',))
+@bp.route('/items/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
     get_item(id)

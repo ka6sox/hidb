@@ -5,5 +5,10 @@
 {% endblock %}
 
 {% block content %}
-  This space left intentionally blank
+<form action="{{ url_for('search.run_search') }}" method="post">
+  Search for stuff!
+
+
+  <input class="submit" type="submit" value="Search">
+</form>
 {% endblock %}
