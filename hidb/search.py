@@ -23,32 +23,40 @@ def run_search():
       do_search_sublocation = request.form.get('search_sublocations')
 
       query = 'SELECT i.id, model_no, description, qty, cost, date_added, location, sublocation FROM items i WHERE '
+      valid_query = False
 
       if do_search_model_no == "search_model_no":
         query += "model_no LIKE '%%%s%%' AND " % request.form['model_no']
+        valid_query = True
       if do_search_description == "search_description":
         query += "description LIKE '%%%s%%' AND " % request.form['description']
+        valid_query = True
       if do_search_locations == "search_locations":
         query += "location IN (" + ",".join(request.form.getlist('locations')) + ") AND "
+        valid_query = True
       if do_search_sublocation == "search_sublocation":
         query += "sublocation LIKE '%%%s%%'" + request.form['sublocation']
+        valid_query = True
 
       if query.endswith('AND '):
         query = query[:-4]
 
-      db = get_db()
-      cursor = db.cursor()
-      cursor.execute(query)
-      db.commit()
-      results = cursor.fetchall()
+      if valid_query:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(query)
+        db.commit()
+        results = cursor.fetchall()
 
-      # print(len(results))
-      # print(results)
+        # print(len(results))
+        # print(results)
 
-      if len(results) == 0:
-        error = "No matching items were found."
+        if len(results) == 0:
+          error = "No matching items were found."
+        else:
+          error = None
       else:
-        error = None
+        error = "You must select at least one search criteria."
 
       if error is not None:
         return render_template('search/error.html', error=error, query=query)
