@@ -17,7 +17,7 @@
     <label for="location">Location</label>
     <select name="location">
     {% for l in locations %}
-      <option value="{{ l.id }}" SELECTED>{{ l.description }}</option>
+      <option value="{{ l.id }}">{{ l.description }}</option>
     {% endfor %}
     </select>
     <label for="sublocation">Sublocation</label>

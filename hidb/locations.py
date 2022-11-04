@@ -14,7 +14,7 @@ def index():
     locations = db.execute(
         'SELECT l.id, description'
         ' FROM locations l JOIN users u ON l.creator_id = u.id'
-        ' ORDER BY l.id ASC'
+        ' ORDER BY l.description ASC'
     ).fetchall()
     return render_template('locations/index.html', locations=locations)
 
@@ -44,7 +44,7 @@ def create():
 
 def get_locations():
     locations = get_db().execute(
-        'SELECT l.id, description FROM locations l'
+        'SELECT l.id, description FROM locations l ORDER BY description ASC'
     ).fetchall()
 
     return locations

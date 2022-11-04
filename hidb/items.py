@@ -59,54 +59,67 @@ def create():
 
     return render_template('items/create.html', locations=locations)
 
-def get_post(id, check_author=True):
-    post = get_db().execute(
-        'SELECT p.id, title, body, created, author_id, username'
-        ' FROM post p JOIN user u ON p.author_id = u.id'
-        ' WHERE p.id = ?',
+def get_item(id, check_author=True):
+    item = get_db().execute(
+        'SELECT i.id, model_no, description, qty, cost, location, sublocation, creator_id'
+        ' FROM items i JOIN users u ON i.creator_id = u.id'
+        ' WHERE i.id = ?',
         (id,)
     ).fetchone()
 
-    if post is None:
-        abort(404, f"Post id {id} doesn't exist.")
+    if item is None:
+        abort(404, f"Item id {id} doesn't exist.")
 
-    if check_author and post['author_id'] != g.user['id']:
+    if check_author and item['creator_id'] != g.user['id']:
         abort(403)
 
-    return post
+    return item
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
 @login_required
 def update(id):
-    post = get_post(id)
+    item = get_item(id)
+    locations = get_locations()
 
     if request.method == 'POST':
-        title = request.form['title']
-        body = request.form['body']
+        model_no = request.form['model_no']
+        description = request.form['description']
+        qty = request.form['qty']
+        cost = request.form['cost']
+        location = request.form['location']
+        sublocation = request.form['sublocation']
         error = None
 
-        if not title:
-            error = 'Title is required.'
+        if not model_no:
+            error = 'Make/model number is required.'
+        if not description:
+            error = 'Description is required.'
+        if not qty:
+            error = 'Quantity is required.'
+        if not cost:
+            error = 'Cost number is required.'
+        if not location:
+            error = 'Location is required.'
 
         if error is not None:
             flash(error)
         else:
             db = get_db()
             db.execute(
-                'UPDATE post SET title = ?, body = ?'
+                'UPDATE items SET model_no = ?, description = ?, qty = ?, cost = ?, location = ?, sublocation = ?'
                 ' WHERE id = ?',
-                (title, body, id)
+                (model_no, description, qty, cost, location, sublocation, id)
             )
             db.commit()
             return redirect(url_for('items.index'))
 
-    return render_template('items/update.html', post=post)
+    return render_template('items/update.html', item=item, locations=locations)
 
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
-    get_post(id)
+    get_item(id)
     db = get_db()
-    db.execute('DELETE FROM post WHERE id = ?', (id,))
+    db.execute('DELETE FROM items WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('items.index'))

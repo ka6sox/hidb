@@ -1,20 +1,32 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Edit "{{ post['title'] }}"{% endblock %}</h1>
+  <h1>{% block title %}Edit "{{ item['model_no'] }} {{ item['description'] }}"{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
   <form method="post">
-    <label for="title">Title</label>
-    <input name="title" id="title"
-      value="{{ request.form['title'] or post['title'] }}" required>
-    <label for="body">Body</label>
-    <textarea name="body" id="body">{{ request.form['body'] or post['body'] }}</textarea>
+    <label for="model_no">Make/Model</label>
+    <input name="model_no" id="model_no" value="{{ request.form['model_no'] or item['model_no'] }}" required>
+    <label for="description">Description</label>
+    <textarea name="description" id="description" required>{{ request.form['description'] or item['description'] }}</textarea>
+    <label for="qty">Quantity</label>
+    <input name="qty" id="qty" value="{{ request.form['qty'] or item['qty'] }}" required>
+    <label for="cost">Cost</label>
+    <input name="cost" id="cost" value="{{ request.form['cost'] or item['cost'] }}" required>
+    <label for="location">Location</label>
+    <select name="location">
+    {% for l in locations %}
+      <option value="{{ l.id }}" {% if item['location'] == l.id %} SELECTED {% endif %} >{{ l.description }}</option>
+    {% endfor %}
+    </select>
+    <label for="sublocation">Sublocation</label>
+    <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] or item['sublocation'] }}">
+
     <input type="submit" value="Save">
   </form>
   <hr>
-  <form action="{{ url_for('items.delete', id=post['id']) }}" method="post">
+  <form action="{{ url_for('items.delete', id=item['id']) }}" method="post">
     <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
   </form>
 {% endblock %}
