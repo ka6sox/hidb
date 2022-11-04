@@ -12,22 +12,23 @@ You have not defined any locations yet.
 <form action="{{ url_for('search.run_search') }}" method="post">
 
   <label for="model_no">
-    <input type="checkbox" name="search_type" value="model_no">Make/Model:</label>
+    <input type="checkbox" name="search_model_no" value="search_model_no">Make/Model:</label>
   <input name="model_no" id="model_no">
 
   <label for="description">
-    <input type="checkbox" name="search_type" value="description">Description:</label>
+    <input type="checkbox" name="search_description" value="search_description">Description:</label>
   <input name="description" id="description">
 
   <label for="location">
-    <input type="checkbox" name="search_type" value="location">Location(s):</label>
-  <select name="location" multiple>
+    <input type="checkbox" name="search_locations" value="search_locations">Location(s):</label>
+  <select name="locations" multiple>
     {% for l in locations %}
-  <option value="{{ l.id }}">{{ l.description }}</option>
-  {% endfor %}
+    <option value="{{ l.id }}">{{ l.description }}</option>
+    {% endfor %}
+  </select>
 
   <label for="sublocation">
-    <input type="checkbox" name="search_type" value="sublocation">Sublocation:</label>
+    <input type="checkbox" name="search_sublocation" value="search_sublocation">Sublocation:</label>
   <input name="sublocation" id="sublocation">
 
   <input class="submit" type="submit" value="Search">

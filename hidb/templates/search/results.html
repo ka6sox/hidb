@@ -5,5 +5,13 @@
 {% endblock %}
 
 {% block content %}
-  {{ results }}
+
+  <article class="post">
+    {% autoescape off %}
+    {{ results }}
+    {% endautoescape %}
+  </article>
+
+  <a class="action" href="{{ url_for('search.index') }}">Search Again</a>
+
 {% endblock %}
