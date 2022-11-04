@@ -6,10 +6,25 @@
 
 {% block content %}
 
+Query was: {{ query }}
+  
+<br />
+
+Found {{ results|length }} results.
+
+<br /><br />
+
   <article class="post">
-    {% autoescape off %}
-    {{ results }}
-    {% endautoescape %}
+    {% for r in results %}
+    <header><div>
+    <h1>{{ r['model_no'] }}</h1>
+    <div class="about">Quantity: {{ r['qty'] }} | Cost: {{ r['cost']|format_currency }} | Acquired {{ r['date_added'].strftime('%Y-%m-%d') }}</div>
+  </div>
+  <a class="action" href="{{ url_for('items.update', id=r['id']) }}">Edit</a>
+    </header>
+    <p class="body">{{ r['description'] }}</p>
+
+    {% endfor %}
   </article>
 
   <a class="action" href="{{ url_for('search.index') }}">Search Again</a>
