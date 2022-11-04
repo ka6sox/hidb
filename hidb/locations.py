@@ -42,54 +42,53 @@ def create():
 
     return render_template('locations/create.html')
 
-def get_post(id, check_author=True):
-    post = get_db().execute(
-        'SELECT p.id, title, body, created, author_id, username'
-        ' FROM post p JOIN user u ON p.author_id = u.id'
-        ' WHERE p.id = ?',
+def get_location(id, check_creator=True):
+    location = get_db().execute(
+        'SELECT l.id, description, creator_id'
+        ' FROM locations l JOIN users u ON l.creator_id = u.id'
+        ' WHERE l.id = ?',
         (id,)
     ).fetchone()
 
-    if post is None:
-        abort(404, f"Post id {id} doesn't exist.")
+    if location is None:
+        abort(404, f"Location id {id} doesn't exist.")
 
-    if check_author and post['author_id'] != g.user['id']:
+    if check_creator and location['creator_id'] != g.user['id']:
         abort(403)
 
-    return post
+    return location
 
-@bp.route('/<int:id>/update', methods=('GET', 'POST'))
+@bp.route('/locations/<int:id>/update', methods=('GET', 'POST'))
 @login_required
 def update(id):
-    post = get_post(id)
+    location = get_location(id)
 
     if request.method == 'POST':
-        title = request.form['title']
-        body = request.form['body']
+        description = request.form['description']
         error = None
 
-        if not title:
-            error = 'Title is required.'
+        if not description:
+            error = 'Description is required.'
 
         if error is not None:
             flash(error)
         else:
             db = get_db()
             db.execute(
-                'UPDATE post SET title = ?, body = ?'
+                'UPDATE locations SET description = ?'
                 ' WHERE id = ?',
-                (title, body, id)
+                (description, id)
             )
             db.commit()
-            return redirect(url_for('items.index'))
+            return redirect(url_for('locations.index'))
 
-    return render_template('items/update.html', post=post)
+    return render_template('locations/update.html', location=location)
 
-@bp.route('/<int:id>/delete', methods=('POST',))
+@bp.route('/locations/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
-    get_post(id)
+    get_location(id)
     db = get_db()
-    db.execute('DELETE FROM post WHERE id = ?', (id,))
+    db.execute('DELETE FROM locations WHERE id = ?', (id,))
     db.commit()
-    return redirect(url_for('items.index'))
+    return redirect(url_for('locations.index'))
