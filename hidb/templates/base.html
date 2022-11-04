@@ -13,6 +13,8 @@
     {% endif %}
   </ul>
 </nav>
+<a class="action" href="{{ url_for('items.index') }}">Items</a>
+<a class="action" href="{{ url_for('locations.index') }}">Locations</a>
 <section class="content">
   <header>
     {% block header %}{% endblock %}
