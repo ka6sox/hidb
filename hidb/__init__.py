@@ -45,4 +45,8 @@ def create_app(test_config=None):
     app.register_blueprint(locations.bp)
     app.add_url_rule('/locations', endpoint='index')
 
+    from . import search
+    app.register_blueprint(search.bp)
+    app.add_url_rule('/search', endpoint='index')
+
     return app
