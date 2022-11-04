@@ -12,11 +12,10 @@
     <article class="post">
       <header>
         <div>
-          <h1>{{ location['description'] }}</h1>
+          <h3>{{ location['description'] }}</h3>
         </div>
         <a class="action" href="{{ url_for('locations.update', id=location['id']) }}">Edit</a>
       </header>
-      <p class="body">Blah blah blah</p>
     </article>
     {% if not loop.last %}
       <hr>
