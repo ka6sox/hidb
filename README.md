@@ -34,4 +34,14 @@ $ coverage html
 # Build release package
 $ python setup.py bdist_wheel
 
+# Build Docker container
+# Note: must re-run this command to incorporate changes
+$ docker-compose build
+
+# Start up Docker container
+$ docker-compose up
+
+# Shut down Docker container
+$ docker-compose down
+
 ```
