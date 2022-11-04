@@ -9,11 +9,11 @@ from hidb.locations import get_locations
 
 bp = Blueprint('items', __name__)
 
-@bp.route('/')
+@bp.route('/items')
 def index():
     db = get_db()
     items = db.execute(
-        'SELECT i.id, model_no, description, qty, date_added'
+        'SELECT i.id, model_no, description, qty, cost, date_added'
         ' FROM items i JOIN users u ON i.creator_id = u.id'
         ' ORDER BY date_added DESC'
     ).fetchall()

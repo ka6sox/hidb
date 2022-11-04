@@ -1,10 +1,13 @@
 import os
 
 from flask import Flask
+from .filters import format_currency
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    app.jinja_env.filters['format_currency'] = format_currency
+
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'hidb.sqlite'),
@@ -36,7 +39,7 @@ def create_app(test_config=None):
 
     from . import items
     app.register_blueprint(items.bp)
-    app.add_url_rule('/', endpoint='index')
+    app.add_url_rule('/items', endpoint='index')
 
     from . import locations
     app.register_blueprint(locations.bp)

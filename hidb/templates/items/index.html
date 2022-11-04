@@ -12,8 +12,10 @@
     <article class="post">
       <header>
         <div>
-          <h1>{{ item['model_no'] }} {{ item['description'] }}</h1>
-          <div class="about">Quantity: {{ item['qty'] }} Added {{ item['date_added'].strftime('%Y-%m-%d') }}</div>
+          <h1>{{ item['model_no'] }}</h1>
+          <div class="about">Quantity: {{ item['qty'] }} | Cost: {{ item['cost']|format_currency }} | Acquired {{ item['date_added'].strftime('%Y-%m-%d') }}<br />
+          {{ item['description'] }}
+          </div>
         </div>
         <a class="action" href="{{ url_for('items.update', id=item['id']) }}">Edit</a>
       </header>
