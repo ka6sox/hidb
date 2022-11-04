@@ -19,6 +19,7 @@ You have not defined any locations yet.
     <label for="cost">Cost</label>
     <input name="cost" id="cost" value="{{ request.form['cost'] }}" required>
     <label for="location">Location</label>
+    <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a>
     <select name="location">
     {% for l in locations %}
       <option value="{{ l.id }}">{{ l.description }}</option>
