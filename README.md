@@ -1,7 +1,8 @@
 # hidb
+
 Home Inventory DataBase
 
-### Getting Started
+## Getting Started
 
 Use [Pyenv](https://github.com/pyenv/pyenv) to manage multiple Python versions.
 
@@ -17,10 +18,10 @@ $ source env/bin/activate
 $ pip3 install -r requirements.txt
 
 # Init the db schema
-$ flask --app flaskr init-db
+$ flask --app hidb init-db
 
 # Run the app
-$ flask --app flaskr --debug run
+$ flask --app hidb --debug run
 
 # Run unit tests
 $ pytest
