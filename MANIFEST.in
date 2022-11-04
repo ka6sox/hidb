@@ -1,0 +1,4 @@
+include hidb/schema.sql
+graft hidb/static
+graft hidb/templates
+global-exclude *.pyc
