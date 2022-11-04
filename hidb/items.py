@@ -61,7 +61,7 @@ def create():
 
 def get_item(id, check_author=True):
     item = get_db().execute(
-        'SELECT i.id, model_no, description, qty, cost, location, sublocation, creator_id'
+        'SELECT i.id, model_no, description, qty, cost, location, sublocation, date_added, creator_id'
         ' FROM items i JOIN users u ON i.creator_id = u.id'
         ' WHERE i.id = ?',
         (id,)
@@ -114,6 +114,11 @@ def update(id):
             return redirect(url_for('items.index'))
 
     return render_template('items/update.html', item=item, locations=locations)
+
+@bp.route('/items/<int:id>/details', methods=('GET',))
+def details(id):
+    item = get_item(id)
+    return render_template('items/details.html', item=item)
 
 @bp.route('/items/<int:id>/delete', methods=('POST',))
 @login_required
