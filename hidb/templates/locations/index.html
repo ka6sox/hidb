@@ -2,7 +2,6 @@
 
 {% block header %}
   <h1>{% block title %}Locations{% endblock %}</h1>
-  <h3><a class="action" href="{{ url_for('items.index') }}">Items</a> [ Locations ]</h3>
   {% if g.user %}
     <a class="action" href="{{ url_for('locations.create') }}">New</a>
   {% endif %}
