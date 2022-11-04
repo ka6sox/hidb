@@ -38,4 +38,8 @@ def create_app(test_config=None):
     app.register_blueprint(items.bp)
     app.add_url_rule('/', endpoint='index')
 
+    from . import locations
+    app.register_blueprint(locations.bp)
+    app.add_url_rule('/locations', endpoint='index')
+
     return app
