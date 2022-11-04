@@ -5,6 +5,7 @@ from werkzeug.exceptions import abort
 
 from hidb.auth import login_required
 from hidb.db import get_db
+from hidb.locations import get_locations
 
 bp = Blueprint('items', __name__)
 
@@ -21,11 +22,16 @@ def index():
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
+    locations = get_locations()
+
     if request.method == 'POST':
+
         model_no = request.form['model_no']
         description = request.form['description']
         qty = request.form['qty']
         cost = request.form['cost']
+        location = request.form['location']
+        sublocation = request.form['sublocation']
         error = None
 
         if not model_no:
@@ -36,20 +42,22 @@ def create():
             error = 'Quantity is required.'
         if not cost:
             error = 'Cost number is required.'
+        if not location:
+            error = 'Location is required.'
 
         if error is not None:
             flash(error)
         else:
             db = get_db()
             db.execute(
-                'INSERT INTO items (model_no, description, qty, cost, creator_id)'
-                ' VALUES (?, ?, ?, ?, ?)',
-                (model_no, description, qty, cost, g.user['id'])
+                'INSERT INTO items (model_no, description, qty, cost, location, sublocation, creator_id)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?)',
+                (model_no, description, qty, cost, location, sublocation, g.user['id'])
             )
             db.commit()
             return redirect(url_for('items.index'))
 
-    return render_template('items/create.html')
+    return render_template('items/create.html', locations=locations)
 
 def get_post(id, check_author=True):
     post = get_db().execute(

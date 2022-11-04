@@ -14,6 +14,14 @@
     <input name="qty" id="qty" value="{{ request.form['qty'] }}" required>
     <label for="cost">Cost</label>
     <input name="cost" id="cost" value="{{ request.form['cost'] }}" required>
+    <label for="location">Location</label>
+    <select name="location">
+    {% for l in locations %}
+      <option value="{{ l.id }}" SELECTED>{{ l.description }}</option>
+    {% endfor %}
+    </select>
+    <label for="sublocation">Sublocation</label>
+    <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
 
     <input type="submit" value="Save">
   </form>

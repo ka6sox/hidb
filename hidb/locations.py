@@ -42,6 +42,13 @@ def create():
 
     return render_template('locations/create.html')
 
+def get_locations():
+    locations = get_db().execute(
+        'SELECT l.id, description FROM locations l'
+    ).fetchall()
+
+    return locations
+
 def get_location(id, check_creator=True):
     location = get_db().execute(
         'SELECT l.id, description, creator_id'
