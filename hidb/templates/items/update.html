@@ -29,6 +29,8 @@ You have not defined any locations yet.
     <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] or item['sublocation'] }}">
 
     <label for="photo">Photo</label>
+    <img src="/static/photos/{{ item['photo'] }}">
+    <b>Click "Browse" below to replace with a new photo</b>
     <input type = "file" name = "photo" />
 
     <input type="submit" value="Save">
