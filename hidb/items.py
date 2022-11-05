@@ -140,7 +140,7 @@ def update(id):
         old_filename = None
         new_filename = None
         if 'photo' in request.files:
-          print("photo in request.files")
+          # print("photo in request.files")
           photo = request.files['photo']
           # if user does not select file, browser also
           # submit an empty part without filename
@@ -184,10 +184,10 @@ def update(id):
               )
               db.commit()
               # delete the old file
-              print("deleting old file: " + old_filename)
-              print("new file: " + new_filename)
-              fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], old_filename)
-              os.remove(fullpath)
+              # print("deleting old file: " + old_filename)
+              # print("new file: " + new_filename)
+              old_fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], old_filename)
+              os.remove(old_fullpath)
 
             return redirect(url_for('items.index'))
 
@@ -206,6 +206,7 @@ def delete(id):
     db = get_db()
     db.execute('DELETE FROM items WHERE id = ?', (id,))
     db.commit()
+    # also delete the photo
     fullpath = os.path.join(current_app.config['UPLOAD_FOLDER'], i['photo'])
     if os.path.exists(fullpath):
         os.remove(fullpath)
