@@ -144,11 +144,14 @@ def details(id):
     item = get_item(id)
     return render_template('items/details.html', item=item)
 
-@bp.route('/items/<int:id>/delete', methods=('POST',))
+@bp.route('/items/<int:id>/delete', methods=('GET', 'POST',))
 @login_required
 def delete(id):
-    get_item(id)
+    i = get_item(id)
     db = get_db()
     db.execute('DELETE FROM items WHERE id = ?', (id,))
     db.commit()
+    fullpath = os.path.join(current_app.config['UPLOAD_FOLDER'], i['photo'])
+    if os.path.exists(fullpath):
+        os.remove(fullpath)
     return redirect(url_for('items.index'))
