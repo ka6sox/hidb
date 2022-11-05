@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for, current_app
 )
@@ -66,8 +67,19 @@ def create():
         if not allowed_file_type(photo.filename):
             error = 'Invalid file type. Accepted file types are: ' + ', '.join(current_app.config["ALLOWED_EXTENSIONS"])
         else:
-            filename = secure_filename(photo.filename)
-            photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            # ditch whatever filename the file was uploaded as, and create a unique one based on uuid
+            # first we yoink the extension
+            split_tup = os.path.splitext(photo.filename)
+            #print(split_tup)
+            # extract the file extension
+            #file_name = split_tup[0]
+            # first char is a period so we strip it out
+            file_extension = split_tup[1][1:]
+
+            # now secure-ize it and make the full path
+            filename = secure_filename(str(uuid.uuid4()) + '.' + file_extension)
+            fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+            photo.save(fullpath)
 
         if error is not None:
             flash(error)
