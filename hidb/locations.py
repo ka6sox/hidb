@@ -91,11 +91,19 @@ def update(id):
 
     return render_template('locations/update.html', location=location)
 
-@bp.route('/locations/<int:id>/delete', methods=('POST',))
+@bp.route('/locations/<int:id>/delete', methods=('GET', 'POST',))
 @login_required
 def delete(id):
-    get_location(id)
+    location = get_location(id)
+    locs = get_locations()
+    if len(locs) == 1:
+        flash('You cannot delete the last location.')
+        return render_template('locations/update.html', location=location)
     db = get_db()
     db.execute('DELETE FROM locations WHERE id = ?', (id,))
     db.commit()
+    # forcibly move all items to the first location
+    db.execute('UPDATE items SET location = ?', (locs[0],))
+    db.commit()
+
     return redirect(url_for('locations.index'))

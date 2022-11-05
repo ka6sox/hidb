@@ -14,7 +14,10 @@
         <div>
           <h3>{{ location['description'] }}</h3>
         </div>
+        {% if g.user %}
         <a class="action" href="{{ url_for('locations.update', id=location['id']) }}">Edit</a>
+        <a class="action" href="{{ url_for('locations.delete', id=location['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>
+        {% endif %}
       </header>
     </article>
     {% if not loop.last %}
