@@ -11,8 +11,15 @@
   {% for item in items %}
     <article class="post">
         <div>
-          <h3><A HREF="{{ url_for('items.details', id=item['id']) }}">{{ item['model_no'] }} ({{ item['qty'] }} owned)</A></h3>
+          <h3>
+            <A HREF="{{ url_for('items.details', id=item['id']) }}">
+              {{ item['model_no'] }} ({{ item['qty'] }} owned)
+            </A>
+          </h3>
         </div>
+        {% if g.user %} <!-- ['id'] == post['author_id'] -->
+        <a class="action" href="{{ url_for('items.update', id=item['id']) }}">Edit</a>
+        {% endif %}
     </article>
     {% if not loop.last %}
       <hr>
