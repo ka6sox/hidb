@@ -14,5 +14,8 @@
       <a class="action" href="{{ url_for('items.update', id=item['id']) }}">Edit</a>
     </header>
     <p class="body">{{ item['description'] }}</p>
+    <p class="body">Location: {{ item['location'] }} | Sublocation: {{ item['sublocation'] }}</p>
+    <img src="/static/photos/{{ item['photo'] }}">
+
   </article>
 {% endblock %}

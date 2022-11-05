@@ -9,7 +9,7 @@
 You have not defined any locations yet.
 <A HREF="{{ url_for('locations.create') }}">Please do so first.</A>
 {% else %}
-  <form method="post">
+  <form method="post" enctype=multipart/form-data>
     <label for="model_no">Make/Model</label>
     <input name="model_no" id="model_no" value="{{ request.form['model_no'] }}" required>
     <label for="description">Description</label>
@@ -27,6 +27,9 @@ You have not defined any locations yet.
     </select>
     <label for="sublocation">Sublocation</label>
     <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
+
+    <label for="photo">Photo</label>
+    <input type = "file" name = "photo" />
 
     <input type="submit" value="Save">
   </form>

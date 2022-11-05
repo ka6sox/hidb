@@ -33,6 +33,7 @@ CREATE TABLE items (
   cost REAL NOT NULL,
   location INTEGER,
   sublocation TEXT NOT NULL,
+  photo TEXT NOT NULL,
   date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   date_acquired TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (creator_id) REFERENCES users (id),
