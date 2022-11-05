@@ -60,26 +60,26 @@ def create():
         # submit an empty part without filename
         if photo.filename == '':
             error = 'No photo was provided.'
-
-        # blob = photo.read()
-        # if len(blob) > current_app.config["MAX_CONTENT_LENGTH"]:
-        #     error = 'Photo is too large. Maximum size is ' + current_app.config["MAX_CONTENT_LENGTH"] + '.'
-        if not allowed_file_type(photo.filename):
-            error = 'Invalid file type. Accepted file types are: ' + ', '.join(current_app.config["ALLOWED_EXTENSIONS"])
         else:
-            # ditch whatever filename the file was uploaded as, and create a unique one based on uuid
-            # first we yoink the extension
-            split_tup = os.path.splitext(photo.filename)
-            #print(split_tup)
-            # extract the file extension
-            #file_name = split_tup[0]
-            # first char is a period so we strip it out
-            file_extension = split_tup[1][1:]
+          # blob = photo.read()
+          # if len(blob) > current_app.config["MAX_CONTENT_LENGTH"]:
+          #     error = 'Photo is too large. Maximum size is ' + current_app.config["MAX_CONTENT_LENGTH"] + '.'
+          if not allowed_file_type(photo.filename):
+              error = 'Invalid file type. Accepted file types are: ' + ', '.join(current_app.config["ALLOWED_EXTENSIONS"])
+          else:
+              # ditch whatever filename the file was uploaded as, and create a unique one based on uuid
+              # first we yoink the extension
+              split_tup = os.path.splitext(photo.filename)
+              #print(split_tup)
+              # extract the file extension
+              #file_name = split_tup[0]
+              # first char is a period so we strip it out
+              file_extension = split_tup[1][1:]
 
-            # now secure-ize it and make the full path
-            filename = secure_filename(str(uuid.uuid4()) + '.' + file_extension)
-            fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
-            photo.save(fullpath)
+              # now secure-ize it and make the full path
+              filename = secure_filename(str(uuid.uuid4()) + '.' + file_extension)
+              fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+              photo.save(fullpath)
 
         if error is not None:
             flash(error)
@@ -137,6 +137,35 @@ def update(id):
         if not location:
             error = 'Location is required.'
 
+        old_filename = None
+        new_filename = None
+        if 'photo' in request.files:
+          print("photo in request.files")
+          photo = request.files['photo']
+          # if user does not select file, browser also
+          # submit an empty part without filename
+          if photo.filename != '':
+            # blob = photo.read()
+            # if len(blob) > current_app.config["MAX_CONTENT_LENGTH"]:
+            #     error = 'Photo is too large. Maximum size is ' + current_app.config["MAX_CONTENT_LENGTH"] + '.'
+            if not allowed_file_type(photo.filename):
+              error = 'Invalid file type. Accepted file types are: ' + ', '.join(current_app.config["ALLOWED_EXTENSIONS"])
+            else:
+              # ditch whatever filename the file was uploaded as, and create a unique one based on uuid
+              # first we yoink the extension
+              split_tup = os.path.splitext(photo.filename)
+              #print(split_tup)
+              # extract the file extension
+              #file_name = split_tup[0]
+              # first char is a period so we strip it out
+              file_extension = split_tup[1][1:]
+
+              # now secure-ize it and make the full path
+              old_filename = item["photo"]
+              new_filename = secure_filename(str(uuid.uuid4()) + '.' + file_extension)
+              fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], new_filename)
+              photo.save(fullpath)
+
         if error is not None:
             flash(error)
         else:
@@ -147,6 +176,19 @@ def update(id):
                 (model_no, description, qty, cost, location, sublocation, id)
             )
             db.commit()
+            if new_filename is not None:
+              db.execute(
+                  'UPDATE items SET photo = ?'
+                  ' WHERE id = ?',
+                  (new_filename, id)
+              )
+              db.commit()
+              # delete the old file
+              print("deleting old file: " + old_filename)
+              print("new file: " + new_filename)
+              fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], old_filename)
+              os.remove(fullpath)
+
             return redirect(url_for('items.index'))
 
     return render_template('items/update.html', item=item, locations=locations)
