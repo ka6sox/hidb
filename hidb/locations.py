@@ -103,7 +103,11 @@ def delete(id):
     db.execute('DELETE FROM locations WHERE id = ?', (id,))
     db.commit()
     # forcibly move all items to the first location
-    db.execute('UPDATE items SET location = ?', (locs[0],))
+    # unless you're deleting it, in which case move them to the second
+    loc_to_move_stuff_to = locs[0]['id']
+    if loc_to_move_stuff_to == id:
+        loc_to_move_stuff_to = locs[1]['id']
+    db.execute('UPDATE items SET location = ?', (loc_to_move_stuff_to,))
     db.commit()
 
     return redirect(url_for('locations.index'))
