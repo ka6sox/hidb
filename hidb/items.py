@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 
 from hidb.auth import login_required
 from hidb.db import get_db
-from hidb.locations import get_locations
+from hidb.locations import get_locations, get_location
 
 bp = Blueprint('items', __name__)
 
@@ -142,7 +142,8 @@ def update(id):
 @bp.route('/items/<int:id>/details', methods=('GET',))
 def details(id):
     item = get_item(id)
-    return render_template('items/details.html', item=item)
+    location = get_location(item["location"])
+    return render_template('items/details.html', item=item, location=location["description"])
 
 @bp.route('/items/<int:id>/delete', methods=('GET', 'POST',))
 @login_required
