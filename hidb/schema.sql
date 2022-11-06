@@ -8,15 +8,6 @@ CREATE TABLE users (
   password TEXT NOT NULL
 );
 
-/*
- * Location:
- *    Room of house [Dropdown Menu + Custom]
- *    Area in room (cabinet x, etc.)
- *    Sub-location within area(box y, Drawer Z18, etc.)
- *
- * Photo(s)
- */
-
 CREATE TABLE locations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   creator_id INTEGER NOT NULL,
@@ -27,13 +18,14 @@ CREATE TABLE locations (
 CREATE TABLE items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   creator_id INTEGER NOT NULL,
-  description TEXT NOT NULL,
   model_no TEXT NOT NULL,
+  serial_no TEXT,
+  description TEXT,
   qty INTEGER NOT NULL,
   cost REAL NOT NULL,
-  location INTEGER,
-  sublocation TEXT NOT NULL,
-  photo TEXT NOT NULL,
+  location INTEGER NOT NULL,
+  sublocation TEXT,
+  photo TEXT,
   date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   date_acquired TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (creator_id) REFERENCES users (id),
