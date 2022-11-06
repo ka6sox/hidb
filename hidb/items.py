@@ -16,7 +16,7 @@ bp = Blueprint('items', __name__)
 def index():
     db = get_db()
     items = db.execute(
-        'SELECT i.id, model_no, description, qty, cost, date_added'
+        'SELECT i.id, model_no, serial_no, description, qty, cost, date_added'
         ' FROM items i JOIN users u ON i.creator_id = u.id'
         ' ORDER BY date_added DESC'
     ).fetchall()
@@ -34,6 +34,7 @@ def create():
     if request.method == 'POST':
 
         model_no = request.form['model_no']
+        serial_no = request.form['serial_no']
         description = request.form['description']
         qty = request.form['qty']
         cost = request.form['cost']
@@ -86,9 +87,9 @@ def create():
         else:
             db = get_db()
             db.execute(
-                'INSERT INTO items (model_no, description, qty, cost, location, sublocation, photo, creator_id)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                (model_no, description, qty, cost, location, sublocation, filename, g.user['id'])
+                'INSERT INTO items (model_no, serial_no, description, qty, cost, location, sublocation, photo, creator_id)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (model_no, serial_no, description, qty, cost, location, sublocation, filename, g.user['id'])
             )
             db.commit()
             return redirect(url_for('items.index'))
@@ -97,7 +98,7 @@ def create():
 
 def get_item(id, check_author=True):
     item = get_db().execute(
-        'SELECT i.id, model_no, description, qty, cost, location, sublocation, photo, date_added, creator_id'
+        'SELECT i.id, model_no, serial_no, description, qty, cost, location, sublocation, photo, date_added, creator_id'
         ' FROM items i JOIN users u ON i.creator_id = u.id'
         ' WHERE i.id = ?',
         (id,)
@@ -119,6 +120,7 @@ def update(id):
 
     if request.method == 'POST':
         model_no = request.form['model_no']
+        serial_no = request.form['serial_no']
         description = request.form['description']
         qty = request.form['qty']
         cost = request.form['cost']
@@ -171,9 +173,9 @@ def update(id):
         else:
             db = get_db()
             db.execute(
-                'UPDATE items SET model_no = ?, description = ?, qty = ?, cost = ?, location = ?, sublocation = ?'
+                'UPDATE items SET model_no = ?, serial_no = ?, description = ?, qty = ?, cost = ?, location = ?, sublocation = ?'
                 ' WHERE id = ?',
-                (model_no, description, qty, cost, location, sublocation, id)
+                (model_no, serial_no, description, qty, cost, location, sublocation, id)
             )
             db.commit()
             if new_filename is not None:
