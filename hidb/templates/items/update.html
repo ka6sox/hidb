@@ -12,6 +12,8 @@ You have not defined any locations yet.
   <form method="post" enctype="multipart/form-data">
     <label for="model_no">Make/Model</label>
     <input name="model_no" id="model_no" value="{{ request.form['model_no'] or item['model_no'] }}" required>
+    <label for="model_no">Serial #</label>
+    <input name="serial_no" id="serial_no" value="{{ request.form['serial_no'] or item['serial_no'] }}">
     <label for="description">Description</label>
     <textarea name="description" id="description" required>{{ request.form['description'] or item['description'] }}</textarea>
     <label for="qty">Quantity</label>
