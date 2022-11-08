@@ -75,6 +75,7 @@
       {% block header %}{% endblock %}
     </header>
 
+    {# based on: https://coderwall.com/p/ijrrpa/flask-flash-messages-as-bootstrap-alert #}
     {% with messages = get_flashed_messages() %}
     {% if messages %}
     {% for message in messages %}
