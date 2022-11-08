@@ -1,39 +1,75 @@
 {% extends 'base.html.j2' %}
 
 {% block header %}
-  <h1>{% block title %}Add New Item{% endblock %}</h1>
+<h1>{% block title %}Add New Item{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-{% if locations|length < 1 %}
-You have not defined any locations yet.
-<A HREF="{{ url_for('locations.create') }}">Please do so first.</A>
-{% else %}
+{% if locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please
+  do so first.</A>
+  {% else %}
   <form method="post" enctype="multipart/form-data">
-    <label for="model_no">Make/Model</label>
-    <input name="model_no" id="model_no" value="{{ request.form['model_no'] }}" required>
-    <label for="serial_no">Serial #</label>
-    <input name="serial_no" id="serial_no" value="{{ request.form['serial_no'] }}">
-    <label for="description">Description</label>
-    <textarea name="description" id="description">{{ request.form['description'] }}</textarea>
-    <label for="qty">Quantity</label>
-    <input name="qty" id="qty" value="{{ request.form['qty'] }}" required>
-    <label for="cost">Cost</label>
-    <input name="cost" id="cost" value="{{ request.form['cost'] }}" required>
-    <label for="location">Location</label>
-    <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a>
-    <select name="location">
-    {% for l in locations %}
-      <option value="{{ l.id }}">{{ l.description }}</option>
-    {% endfor %}
-    </select>
-    <label for="sublocation">Sublocation</label>
-    <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
-
-    <label for="photo">Photo</label>
-    <input type = "file" name = "photo" />
+    <table class="table table-borderless table-dark">
+      <tr>
+        <td><label for="model_no">Make/Model</label></td>
+        <td><input name="model_no" id="model_no" value="{{ request.form['model_no'] }}" required></td>
+      </tr>
+      <tr>
+        <td><label for="serial_no">Serial #</label></td>
+        <td><input name="serial_no" id="serial_no" value="{{ request.form['serial_no'] }}"></td>
+      </tr>
+      <tr>
+        <td>
+          <label for="qty">Quantity</label>
+        </td>
+        <td>
+          <input name="qty" id="qty" value="{{ request.form['qty'] }}" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="cost">Cost</label>
+        </td>
+        <td>
+          <input name="cost" id="cost" value="{{ request.form['cost'] }}" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="location">Location</label>
+        </td>
+        <td>
+          <select name="location">
+            {% for l in locations %}
+            <option value="{{ l.id }}">{{ l.description }}</option>
+            {% endfor %}
+          </select>
+          <br />
+          <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="sublocation">Sublocation</label>
+        </td>
+        <td>
+          <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="photo">Photo</label>
+        </td>
+        <td>
+          <input type="file" name="photo" />
+        </td>
+      </tr>
+    </table>
+    <p><label for="description">Description</label><br />
+      <textarea name="description" id="description">{{ request.form['description'] }}</textarea>
+    </p>
 
     <input type="submit" value="Save">
   </form>
-{% endif %}
-{% endblock %}
+  {% endif %}
+  {% endblock %}
