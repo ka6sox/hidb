@@ -1,47 +1,80 @@
 {% extends 'base.html.j2' %}
 
 {% block header %}
-  <h1>{% block title %}Edit "{{ item['model_no'] }}"{% endblock %}</h1>
+<h1>{% block title %}Edit "{{ item['model_no'] }}"{% endblock %}</h1>
 {% endblock %}
 
-{# TODO: need to bootstrap-ify this #}
-
 {% block content %}
-{% if locations|length < 1 %}
-You have not defined any locations yet.
-<A HREF="{{ url_for('locations.create') }}">Please do so first.</A>
-{% else %}
+{% if locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please
+  do so first.</A>
+  {% else %}
   <form method="post" enctype="multipart/form-data">
-    <label for="model_no">Make/Model</label>
-    <input name="model_no" id="model_no" value="{{ request.form['model_no'] or item['model_no'] }}" required>
-    <label for="model_no">Serial #</label>
-    <input name="serial_no" id="serial_no" value="{{ request.form['serial_no'] or item['serial_no'] }}">
-    <label for="description">Description</label>
-    <textarea name="description" id="description" required>{{ request.form['description'] or item['description'] }}</textarea>
-    <label for="qty">Quantity</label>
-    <input name="qty" id="qty" value="{{ request.form['qty'] or item['qty'] }}" required>
-    <label for="cost">Cost</label>
-    <input name="cost" id="cost" value="{{ request.form['cost'] or item['cost'] }}" required>
-    <label for="location">Location</label>
-    <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a>
-    <select name="location">
-    {% for l in locations %}
-      <option value="{{ l.id }}" {% if item['location'] == l.id %} SELECTED {% endif %} >{{ l.description }}</option>
-    {% endfor %}
-    </select>
-    <label for="sublocation">Sublocation</label>
-    <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] or item['sublocation'] }}">
-
-    <label for="photo">Photo</label>
-    <img src="/static/photos/{{ item['photo'] }}">
-    <b>Click "Browse" below to replace with a new photo</b>
-    <input type = "file" name = "photo" />
+    <table class="table table-borderless table-dark">
+      <tr>
+        <td><label for="model_no">Make/Model:</label></td>
+        <td><input name="model_no" id="model_no" value="{{ request.form['model_no'] or item['model_no'] }}" required>
+        </td>
+      </tr>
+      <tr>
+        <td><label for="serial_no">Serial #:</label></td>
+        <td><input name="serial_no" id="serial_no" value="{{ request.form['serial_no'] or item['serial_no'] }}"></td>
+      </tr>
+      <tr>
+        <td>
+          <label for="qty">Quantity:</label>
+        </td>
+        <td>
+          <input name="qty" id="qty" value="{{ request.form['qty'] or item['qty'] }}" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="cost">Cost:</label>
+        </td>
+        <td>
+          <input name="cost" id="cost" value="{{ request.form['cost'] or item['cost'] }}" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="location">Location:</label>
+        </td>
+        <td>
+          <select name="location">
+            {% for l in locations %}
+            <option value="{{ l.id }}" {% if item and l.id==item['location'] %} selected {% endif %}> {{ l.description
+              }}
+            </option>
+            {% endfor %}
+          </select>
+          <br />
+          <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="sublocation">Sublocation:</label>
+        </td>
+        <td>
+          <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="photo">Update Photo?</label>
+        </td>
+        <td>
+          <input type="file" name="photo" />
+        </td>
+      </tr>
+    </table>
+    <p><label for="description">Description:</label><br />
+      <textarea name="description" id="description">{{ request.form['description'] or item['description'] }}</textarea>
+    </p>
 
     <input type="submit" value="Save">
   </form>
-  <hr>
-  <form action="{{ url_for('items.delete', id=item['id']) }}" method="post">
-    <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
-  </form>
-{% endif %}
-{% endblock %}
+    <a href="{{ url_for('items.details', id=item['id']) }}">Cancel</a><br />
+
+  {% endif %}
+  {% endblock %}

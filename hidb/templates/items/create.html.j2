@@ -11,16 +11,16 @@
   <form method="post" enctype="multipart/form-data">
     <table class="table table-borderless table-dark">
       <tr>
-        <td><label for="model_no">Make/Model</label></td>
+        <td><label for="model_no">Make/Model:</label></td>
         <td><input name="model_no" id="model_no" value="{{ request.form['model_no'] }}" required></td>
       </tr>
       <tr>
-        <td><label for="serial_no">Serial #</label></td>
+        <td><label for="serial_no">Serial #:</label></td>
         <td><input name="serial_no" id="serial_no" value="{{ request.form['serial_no'] }}"></td>
       </tr>
       <tr>
         <td>
-          <label for="qty">Quantity</label>
+          <label for="qty">Quantity:</label>
         </td>
         <td>
           <input name="qty" id="qty" value="{{ request.form['qty'] }}" required>
@@ -28,7 +28,7 @@
       </tr>
       <tr>
         <td>
-          <label for="cost">Cost</label>
+          <label for="cost">Cost:</label>
         </td>
         <td>
           <input name="cost" id="cost" value="{{ request.form['cost'] }}" required>
@@ -36,7 +36,7 @@
       </tr>
       <tr>
         <td>
-          <label for="location">Location</label>
+          <label for="location">Location:</label>
         </td>
         <td>
           <select name="location">
@@ -50,7 +50,7 @@
       </tr>
       <tr>
         <td>
-          <label for="sublocation">Sublocation</label>
+          <label for="sublocation">Sublocation:</label>
         </td>
         <td>
           <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
@@ -58,18 +58,20 @@
       </tr>
       <tr>
         <td>
-          <label for="photo">Photo</label>
+          <label for="photo">Photo:</label>
         </td>
         <td>
           <input type="file" name="photo" />
         </td>
       </tr>
     </table>
-    <p><label for="description">Description</label><br />
+    <p><label for="description">Description:</label><br />
       <textarea name="description" id="description">{{ request.form['description'] }}</textarea>
     </p>
 
     <input type="submit" value="Save">
   </form>
+    <a href="{{ url_for('items.index') }}">Cancel</a>
+
   {% endif %}
   {% endblock %}
