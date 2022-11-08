@@ -1,29 +1,29 @@
 {% extends 'base.html.j2' %}
 
-{# TODO: need to bootstrap-ify this #}
-
 {% block header %}
-  <h1>{% block title %}Locations{% endblock %}</h1>
-  {% if g.user %}
-    <a class="action" href="{{ url_for('locations.create') }}">New</a>
-  {% endif %}
+<h1>{% block title %}Locations{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-  {% for location in locations %}
-    <article class="post">
-      <header>
-        <div>
-          <h3>{{ location['description'] }}</h3>
-        </div>
-        {% if g.user %}
-        <a class="action" href="{{ url_for('locations.update', id=location['id']) }}">Edit</a>
-        <a class="action" href="{{ url_for('locations.delete', id=location['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>
-        {% endif %}
-      </header>
-    </article>
-    {% if not loop.last %}
-      <hr>
-    {% endif %}
-  {% endfor %}
+<table class="table table-dark">
+  <tbody>
+    {% for location in locations %}
+    <tr>
+      <td>{{ location['description'] }}</td>
+      {% if g.user %}
+      <td>
+        <a class="action" href="{{ url_for('locations.update', id=location['id']) }}">Edit</a>&nbsp;&nbsp;&nbsp;
+        <a class="action" href="{{ url_for('locations.delete', id=location['id']) }}"
+          onclick="return confirm('Are you sure?');">Delete</a>
+      </td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if g.user %}
+<p><a href="{{ url_for('locations.create') }}">Add a new location</a></p>
+{% endif %}
+
 {% endblock %}
