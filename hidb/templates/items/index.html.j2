@@ -5,8 +5,7 @@
 {% endblock %}
 
 {% block content %}
-<p>There {% if num_items > 1 %} are {% else %} is {% endif %} {{ num_items }} item{% if num_items > 1 %}s{% endif %} in the database.</p>
-<p>Here are the 20 most recent items:</p>
+<p>There {% if num_items > 1 %} are {% else %} is {% endif %} {{ num_items }} item{% if num_items > 1 %}s{% endif %} in the database. Here are the most recent entries:</p>
 <table class="table table-dark">
   <thead>
     <tr>
