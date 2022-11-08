@@ -116,6 +116,8 @@ def get_item(id, check_author=True):
 
     return item
 
+# BUG: it appears that sometimes when changing an image, the previous image isn't deleted
+
 @bp.route('/items/<int:id>/update', methods=('GET', 'POST'))
 @login_required
 def update(id):
