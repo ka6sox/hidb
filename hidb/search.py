@@ -59,7 +59,10 @@ def run_search():
       else:
         error = "You must select at least one search criteria."
 
+      print("DEBUG: query = %s" % query)
+
       if error is not None:
-        return render_template('search/error.html.j2', error=error, query=query)
+        flash(error)
+        return render_template('search/index.html.j2', locations=get_locations())
       else:
-        return render_template('search/results.html.j2', query=query, results=results)
+        return render_template('search/results.html.j2', results=results)
