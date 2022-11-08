@@ -16,7 +16,7 @@ def index():
         ' FROM locations l JOIN users u ON l.creator_id = u.id'
         ' ORDER BY l.description ASC'
     ).fetchall()
-    return render_template('locations/index.html', locations=locations)
+    return render_template('locations/index.html.j2', locations=locations)
 
 @bp.route('/locations/create', methods=('GET', 'POST'))
 @login_required
@@ -40,7 +40,7 @@ def create():
             db.commit()
             return redirect(url_for('locations.index'))
 
-    return render_template('locations/create.html')
+    return render_template('locations/create.html.j2')
 
 def get_locations():
     locations = get_db().execute(
@@ -89,7 +89,7 @@ def update(id):
             db.commit()
             return redirect(url_for('locations.index'))
 
-    return render_template('locations/update.html', location=location)
+    return render_template('locations/update.html.j2', location=location)
 
 @bp.route('/locations/<int:id>/delete', methods=('GET', 'POST',))
 @login_required
@@ -98,7 +98,7 @@ def delete(id):
     locs = get_locations()
     if len(locs) == 1:
         flash('You cannot delete the last location.')
-        return render_template('locations/update.html', location=location)
+        return render_template('locations/update.html.j2', location=location)
     db = get_db()
     db.execute('DELETE FROM locations WHERE id = ?', (id,))
     db.commit()

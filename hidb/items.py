@@ -20,7 +20,7 @@ def index():
         ' FROM items i JOIN users u ON i.creator_id = u.id'
         ' ORDER BY date_added DESC'
     ).fetchall()
-    return render_template('items/index.html', items=items)
+    return render_template('items/index.html.j2', items=items)
 
 def allowed_file_type(filename):
     return '.' in filename and \
@@ -94,7 +94,7 @@ def create():
             db.commit()
             return redirect(url_for('items.index'))
 
-    return render_template('items/create.html', locations=locations)
+    return render_template('items/create.html.j2', locations=locations)
 
 def get_item(id, check_author=True):
     item = get_db().execute(
@@ -193,13 +193,13 @@ def update(id):
 
             return redirect(url_for('items.index'))
 
-    return render_template('items/update.html', item=item, locations=locations)
+    return render_template('items/update.html.j2', item=item, locations=locations)
 
 @bp.route('/items/<int:id>/details', methods=('GET',))
 def details(id):
     item = get_item(id)
     location = get_location(item["location"])
-    return render_template('items/details.html', item=item, location=location["description"])
+    return render_template('items/details.html.j2', item=item, location=location["description"])
 
 @bp.route('/items/<int:id>/delete', methods=('GET', 'POST',))
 @login_required

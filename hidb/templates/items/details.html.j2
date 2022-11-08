@@ -1,0 +1,27 @@
+{% extends 'base.html.j2' %}
+
+{% block header %}
+<h1>{% block title %}Item Details{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-6">
+    <img src="/static/photos/{{ item['photo'] }}">
+  </div>
+  <div class="col-md-6">
+    <h1>{{ item['model_no'] }}</h1>
+    {% if item['serial_no']|length %} Serial #{{ item['serial_no'] }} | {% endif %}Quantity: {{
+      item['qty'] }} | Cost: {{ item['cost']|format_currency }} | Location: {{ location }} {% if
+      item['sublocation']|length %} / {{ item['sublocation'] }} {% endif %} | Acquired: {{
+      item['date_added'].strftime('%Y-%m-%d') }}
+    {% if g.user %}
+    <a href="{{ url_for('items.update', id=item['id']) }}">Edit</a>
+    <a href="{{ url_for('items.delete', id=item['id']) }}"
+      onclick="return confirm('Are you sure?');">Delete</a>
+    {% endif %}
+  
+    <p class="body">{{ item['description'] }}</p>
+  </div>
+</div>
+{% endblock %}

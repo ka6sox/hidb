@@ -12,7 +12,7 @@ bp = Blueprint('search', __name__)
 @bp.route('/search')
 def index():
   locations = get_locations()
-  return render_template('search/index.html', locations=locations)
+  return render_template('search/index.html.j2', locations=locations)
 
 @bp.route('/search/run_search', methods=('POST',))
 def run_search():
@@ -59,6 +59,6 @@ def run_search():
         error = "You must select at least one search criteria."
 
       if error is not None:
-        return render_template('search/error.html', error=error, query=query)
+        return render_template('search/error.html.j2', error=error, query=query)
       else:
-        return render_template('search/results.html', query=query, results=results)
+        return render_template('search/results.html.j2', query=query, results=results)
