@@ -4,14 +4,18 @@
   <h1>{% block title %}Log In{% endblock %}</h1>
 {% endblock %}
 
-{# TODO: need to bootstrap-ify this #}
-
 {% block content %}
   <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
+  <table class="table table-dark">
+    <tr>
+    <td><label for="username">Username:</label></td>
+    <td><input name="username" id="username" required></td>
+    </tr>
+    <tr>
+    <td><label for="password">Password:</label></td>
+    <td><input type="password" name="password" id="password" required></td>
+    </tr>
+  </table>
     <input type="submit" value="Log In">
   </form>
 {% endblock %}
