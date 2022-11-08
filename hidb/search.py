@@ -23,7 +23,7 @@ def run_search():
       do_search_locations = request.form.get('search_locations')
       do_search_sublocation = request.form.get('search_sublocations')
 
-      query = 'SELECT i.id, model_no, description, qty, cost, date_added, location, sublocation FROM items i WHERE '
+      query = 'SELECT i.id, model_no, serial_no, description, qty, cost, date_added, location, sublocation, photo FROM items i WHERE '
       valid_query = False
 
       if do_search_model_no == "search_model_no":

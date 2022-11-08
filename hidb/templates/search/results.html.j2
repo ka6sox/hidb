@@ -4,27 +4,25 @@
   <h1>{% block title %}Search Results{% endblock %}</h1>
 {% endblock %}
 
-{# TODO: need to bootstrap-ify this #}
-
 {% block content %}
 
+<p>
 <b>DEBUG:</b> Query was: {{ query }}
-  
-<br />
+</p>
 
-Found {{ results|length }} results.
+<p>Found {{ results|length }} results.</p>
 
-<br /><br />
-
-  <article class="post">
+<table class="table w-auto table-dark table-sm">
+  <tbody>
     {% for r in results %}
-    <header><div>
-    <h1><A HREF="{{ url_for('items.details', id=r['id']) }}">{{ r['model_no'] }}</A></h1>
-    </div>
-    </header>
+    <tr>
+    <td><img src="/static/photos/{{ r['photo'] }}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;"></td>
+    <td class="text-left"><A HREF="{{ url_for('items.details', id=r['id']) }}">{{ r['model_no'] }}</A></td>
+    </tr>
     {% endfor %}
-  </article>
+  </tbody>
+</table>
 
-  <a class="action" href="{{ url_for('search.index') }}">Search Again</a>
+<p><a class="action" href="{{ url_for('search.index') }}">Search Again</a></p>
 
 {% endblock %}
