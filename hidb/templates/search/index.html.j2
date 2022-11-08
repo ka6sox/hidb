@@ -1,39 +1,55 @@
 {% extends 'base.html.j2' %}
 
 {% block header %}
-  <h1>{% block title %}Search{% endblock %}</h1>
+<h1>{% block title %}Search{% endblock %}</h1>
 {% endblock %}
-
-{# TODO: need to bootstrap-ify this #}
 
 {% block content %}
-{% if locations|length < 1 %}
-You have not defined any locations yet.
-<A HREF="{{ url_for('locations.create') }}">Please do so first.</A>
-{% else %}
-<form action="{{ url_for('search.run_search') }}" method="post">
+{% if locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please
+  do so first.</A>
+  {% else %}
+  <form action="{{ url_for('search.run_search') }}" method="post">
 
-  <label for="model_no">
-    <input type="checkbox" name="search_model_no" value="search_model_no">Make/Model:</label>
-  <input name="model_no" id="model_no">
+    <table class="table table-dark">
+      <tbody>
+        <tr>
+          <td><input type="checkbox" name="search_model_no" value="search_model_no"></td>
+          <td><label for="model_no">Make/Model:</label></td>
+          <td><input name="model_no" id="model_no"></td>
+        </tr>
 
-  <label for="description">
-    <input type="checkbox" name="search_description" value="search_description">Description:</label>
-  <input name="description" id="description">
+        <tr>
+          <td><input type="checkbox" name="search_serial_no" value="search_serial_no"></td>
+          <td><label for="serial_no">Serial #:</label></td>
+          <td><input name="serial_no" id="serial_no"></td>
+        </tr>
 
-  <label for="location">
-    <input type="checkbox" name="search_locations" value="search_locations">Location(s):</label>
-  <select name="locations" multiple>
-    {% for l in locations %}
-    <option value="{{ l.id }}">{{ l.description }}</option>
-    {% endfor %}
-  </select>
+        <tr>
+          <td><input type="checkbox" name="search_description" value="search_description"></td>
+          <td><label for="description">Description:</label></td>
+          <td><input name="description" id="description"></td>
+        </tr>
 
-  <label for="sublocation">
-    <input type="checkbox" name="search_sublocation" value="search_sublocation">Sublocation:</label>
-  <input name="sublocation" id="sublocation">
+        <tr>
+          <td><input type="checkbox" name="search_locations" value="search_locations"></td>
+          <td><label for="location">Location(s):</label></td>
+          <td>
+            <select name="locations" multiple>
+              {% for l in locations %}
+              <option value="{{ l.id }}">{{ l.description }}</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
 
-  <input class="submit" type="submit" value="Search">
-</form>
-{% endif %}
-{% endblock %}
+        <tr>
+          <td><input type="checkbox" name="search_sublocation" value="search_sublocation"></td>
+          <td><label for="sublocation">Sublocation:</label></td>
+          <td><input name="sublocation" id="sublocation"></td>
+        </tr>
+      </tbody>
+    </table>
+    <input class="submit" type="submit" value="Search">
+  </form>
+  {% endif %}
+  {% endblock %}

@@ -14,6 +14,7 @@ def index():
   locations = get_locations()
   return render_template('search/index.html.j2', locations=locations)
 
+# TODO: add serial number search
 @bp.route('/search/run_search', methods=('POST',))
 def run_search():
     if request.method == 'POST':
