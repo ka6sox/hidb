@@ -8,29 +8,29 @@
 <div class="row">
   {# TODO: layout could use tweaking. see: https://www.tutorialrepublic.com/twitter-bootstrap-tutorial/bootstrap-grid-system.php #}
   <div class="col-md-4">
-  <table class="table table-dark">
+  <table class="table table-borderless table-dark">
   <tbody>
     {% if item['serial_no']|length %}
     <tr>
-    <td>Serial #</td>
+    <td>Serial #:</td>
     <td>{{ item['serial_no'] }}</td>
     </tr>
     {% endif %}
     <tr>
-    <td>Quantity</td>
+    <td>Quantity:</td>
     <td>{{ item['qty'] }}</td>
     </tr>
     <tr>
-    <td>Cost</td>
+    <td>Cost:</td>
     <td>{{ item['cost']|format_currency }}</td>
     </tr>
     <tr>
-    <td>Location</td>
+    <td>Location:</td>
     <td>{{ location }}{% if item['sublocation']|length %} / {{ item['sublocation'] }}{% endif %}
     </td>
     </tr>
     <tr>
-    <td>Acquired</td>
+    <td>Acquired:</td>
     <td>{{ item['date_added'].strftime('%Y-%m-%d %H:%M') }}</td>
     </tr>
     </tbody>
