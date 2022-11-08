@@ -111,7 +111,7 @@ def get_item(id, check_author=True):
     if item is None:
         abort(404, f"Item id {id} doesn't exist.")
 
-    if check_author and item['creator_id'] != g.user['id']:
+    if check_author and g.user is not None and item['creator_id'] != g.user['id']:
         abort(403)
 
     return item

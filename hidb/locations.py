@@ -60,7 +60,7 @@ def get_location(id, check_creator=True):
     if location is None:
         abort(404, f"Location id {id} doesn't exist.")
 
-    if check_creator and location['creator_id'] != g.user['id']:
+    if check_creator and g.user is not None and location['creator_id'] != g.user['id']:
         abort(403)
 
     return location
