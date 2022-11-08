@@ -26,7 +26,7 @@
       <td>{{ item.date_added.strftime('%Y-%m-%d %H:%M') }}</td>
       {% if g.user %} {# ['id'] == post['author_id'] #}
       <td><a href="{{ url_for('items.update', id=item['id']) }}">Edit</a>&nbsp;&nbsp;
-        <a href="{{ url_for('items.delete', id=item['id']) }}">Delete
+        <a href="{{ url_for('items.delete', id=item['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>
       </td>
       {% endif %}
     </tr>
