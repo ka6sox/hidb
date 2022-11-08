@@ -15,12 +15,16 @@ bp = Blueprint('items', __name__)
 @bp.route('/items')
 def index():
     db = get_db()
+    num_items = db.execute(
+        'SELECT COUNT(id) FROM items'
+    ).fetchone()[0]
     items = db.execute(
         'SELECT i.id, model_no, serial_no, description, qty, cost, date_added'
         ' FROM items i JOIN users u ON i.creator_id = u.id'
-        ' ORDER BY date_added DESC'
+        ' ORDER BY date_added DESC LIMIT 20'
     ).fetchall()
-    return render_template('items/index.html.j2', items=items)
+
+    return render_template('items/index.html.j2', num_items=num_items, items=items)
 
 def allowed_file_type(filename):
     return '.' in filename and \

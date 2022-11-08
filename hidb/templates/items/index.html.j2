@@ -1,24 +1,40 @@
 {% extends 'base.html.j2' %}
 
 {% block header %}
-  <h1>{% block title %}Items{% endblock %}</h1>
-  {% if g.user %}
-    <a href="{{ url_for('items.create') }}">New</a>
-  {% endif %}
+<h1>{% block title %}Items{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-  {% for item in items %}
-          <h3>
-            <A HREF="{{ url_for('items.details', id=item['id']) }}">
-              {{ item['model_no'] }} ({{ item['qty'] }} owned)
-            </A>
-          </h3>
-        {% if g.user %} <!-- ['id'] == post['author_id'] -->
-        <a href="{{ url_for('items.update', id=item['id']) }}">Edit</a>
-        {% endif %}
-    {% if not loop.last %}
-      <hr>
-    {% endif %}
+<p>There {% if num_items > 1 %} are {% else %} is {% endif %} {{ num_items }} item{% if num_items > 1 %}s{% endif %} in the database.</p>
+<p>Here are the 20 most recent items:</p>
+<table class="table table-dark">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>S/N</th>
+      <th>Date Added</th>
+      {% if g.user %}
+      <th>Actions</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <td><A HREF="{{ url_for('items.details', id=item['id']) }}">{{ item.model_no }}</A></td>
+      <td>{% if item['serial_no']|length %}{{ item.serial_no }}{% else %}N/A{% endif %}</td>
+      <td>{{ item.date_added.strftime('%Y-%m-%d %H:%M') }}</td>
+      {% if g.user %} {# ['id'] == post['author_id'] #}
+      <td><a href="{{ url_for('items.update', id=item['id']) }}">Edit</a>&nbsp;&nbsp;
+        <a href="{{ url_for('items.delete', id=item['id']) }}">Delete
+      </td>
+      {% endif %}
+    </tr>
+  </tbody>
   {% endfor %}
+</table>
+
+{% if g.user %}
+<p><a href="{{ url_for('items.create') }}">Add a new item</a></p>
+{% endif %}
 {% endblock %}
