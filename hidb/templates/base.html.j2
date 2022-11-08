@@ -12,7 +12,7 @@
 
 <body class="bg-dark text-white">
   <header class="container">
-  {# Navbar example from: https://getbootstrap.com/docs/5.1/components/navbar/ #}
+    {# Navbar example from: https://getbootstrap.com/docs/5.1/components/navbar/ #}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
         <a class="navbar-brand" href="{{ url_for('items.index') }}">Home Inventory Database</a>
@@ -75,11 +75,15 @@
       {% block header %}{% endblock %}
     </header>
 
-    <!-- TODO handle flash messages in a bootstrap compatible manner -->
-
-    {% for message in get_flashed_messages() %}
-    {{ message }}
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+      {{ message }}
+    </div>
     {% endfor %}
+    {% endif %}
+    {% endwith %}
 
     {% block content %}{% endblock %}
   </div>
