@@ -42,6 +42,8 @@ def create():
 
     return render_template('locations/create.html.j2')
 
+# TODO: also add item counts for all locations
+
 def get_locations():
     locations = get_db().execute(
         'SELECT l.id, description FROM locations l ORDER BY description ASC'
