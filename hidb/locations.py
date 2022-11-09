@@ -43,8 +43,6 @@ def create():
 
     return render_template('locations/create.html.j2')
 
-# TODO: also add item counts for all locations
-
 def get_locations():
   print("entering get_locations")
   # locations = get_db().execute(
@@ -117,7 +115,7 @@ def delete(id):
     loc_to_move_stuff_to = locs[0]['id']
     if loc_to_move_stuff_to == id:
         loc_to_move_stuff_to = locs[1]['id']
-    db.execute('UPDATE items SET location = ?', (loc_to_move_stuff_to,))
+    db.execute('UPDATE items SET location = ? WHERE location = ?', (loc_to_move_stuff_to, id))
     db.commit()
 
     return redirect(url_for('locations.index'))
