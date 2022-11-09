@@ -10,8 +10,8 @@
   <thead>
     <tr class="table-primary">
       <th>Item</th>
-      <th>S/N</th>
-      <th>Date Added</th>
+      <th>Qty</th>
+      <th>Location</th>
       {% if g.user %}
       <th>Actions</th>
       {% endif %}
@@ -20,9 +20,11 @@
   <tbody>
     {% for item in items %}
     <tr>
-      <td><A HREF="{{ url_for('items.details', id=item['id']) }}">{{ item.model_no }}</A></td>
-      <td>{% if item['serial_no']|length %}{{ item.serial_no }}{% else %}N/A{% endif %}</td>
-      <td>{{ item.date_added.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td>
+      <img src="/static/photos/{{ item['photo'] }}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;">&nbsp;&nbsp;&nbsp;
+      <A HREF="{{ url_for('items.details', id=item['id']) }}">{{ item.model_no }}</A></td>
+      <td>{{ item.qty }}</td>
+      <td>{{ item.location }}</td>
       {% if g.user %} {# ['id'] == post['author_id'] #}
       <td><a href="{{ url_for('items.update', id=item['id']) }}">Edit</a>&nbsp;&nbsp;
         <a href="{{ url_for('items.delete', id=item['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>

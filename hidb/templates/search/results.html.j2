@@ -7,12 +7,20 @@
 {% block content %}
 <p>Found {{ results|length }} results.</p>
 
-<table class="table w-auto table-borderless table-dark table-sm">
+<table class="table table-borderless table-dark">
+<thead>
+<tr class="table-primary">
+<th>Item</th>
+      <th>Qty</th>
+      <th>Location</th>
+</thead>
   <tbody>
     {% for r in results %}
     <tr>
-    <td><img src="/static/photos/{{ r['photo'] }}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;"></td>
-    <td class="text-left"><A HREF="{{ url_for('items.details', id=r['id']) }}">{{ r['model_no'] }}</A></td>
+    <td><img src="/static/photos/{{ r['photo'] }}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;">&nbsp;&nbsp;&nbsp;
+    <A HREF="{{ url_for('items.details', id=r['id']) }}">{{ r['model_no'] }}</A></td>
+    <td>{{ r['qty'] }}</td>
+    <td>{{ r['location'] }}</td>
     </tr>
     {% endfor %}
   </tbody>

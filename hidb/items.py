@@ -14,17 +14,27 @@ bp = Blueprint('items', __name__)
 
 @bp.route('/items')
 def index():
-    db = get_db()
-    num_items = db.execute(
-        'SELECT COUNT(id) FROM items'
-    ).fetchone()[0]
-    items = db.execute(
-        'SELECT i.id, model_no, serial_no, description, qty, cost, date_added'
-        ' FROM items i JOIN users u ON i.creator_id = u.id'
-        ' ORDER BY date_added DESC LIMIT 20'
-    ).fetchall()
-
+    num_items = get_item_count()
+    items = get_items(20)
     return render_template('items/index.html.j2', num_items=num_items, items=items)
+
+def get_item_count():
+  db = get_db()
+  num_items = db.execute(
+      'SELECT COUNT(id) FROM items'
+  ).fetchone()[0]
+  return num_items
+
+def get_items(limit = None):
+  db = get_db()
+  query = 'SELECT i.id, model_no, serial_no, photo, description, qty, cost, date_added,' \
+          '(SELECT description FROM locations l WHERE location = l.id) as location ' \
+          ' FROM items i JOIN users u ON i.creator_id = u.id' \
+          ' ORDER BY date_added DESC'
+  if limit is not None:
+    query += ' LIMIT ' + str(limit)
+  items = db.execute(query).fetchall()
+  return items
 
 def allowed_file_type(filename):
     return '.' in filename and \
