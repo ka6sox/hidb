@@ -10,13 +10,14 @@ bp = Blueprint('locations', __name__)
 
 @bp.route('/locations')
 def index():
-    db = get_db()
-    locations = db.execute(
-        'SELECT l.id, description'
-        ' FROM locations l JOIN users u ON l.creator_id = u.id'
-        ' ORDER BY l.description ASC'
-    ).fetchall()
-    return render_template('locations/index.html.j2', locations=locations)
+  # db = get_db()
+  # locations = db.execute(
+  #     'SELECT l.id, description'
+  #     ' FROM locations l JOIN users u ON l.creator_id = u.id'
+  #     ' ORDER BY l.description ASC'
+  # ).fetchall()
+  locations = get_locations()
+  return render_template('locations/index.html.j2', locations=locations)
 
 @bp.route('/locations/create', methods=('GET', 'POST'))
 @login_required
@@ -45,15 +46,22 @@ def create():
 # TODO: also add item counts for all locations
 
 def get_locations():
-    locations = get_db().execute(
-        'SELECT l.id, description FROM locations l ORDER BY description ASC'
-    ).fetchall()
-
-    return locations
+  print("entering get_locations")
+  # locations = get_db().execute(
+  #     'SELECT l.id, description FROM locations l ORDER BY description ASC'
+  # ).fetchall()
+  locations = get_db().execute(
+      'SELECT id, description, '
+      '   (SELECT COUNT(*) FROM items WHERE location = l.id) as item_count '
+      '   FROM locations l ORDER BY description ASC'
+  ).fetchall()
+  print(str(locations))
+  return locations
 
 def get_location(id, check_creator=True):
     location = get_db().execute(
-        'SELECT l.id, description, creator_id'
+        'SELECT l.id, description, creator_id, '
+        '(SELECT COUNT(*) FROM items WHERE location = l.id) as item_count '
         ' FROM locations l JOIN users u ON l.creator_id = u.id'
         ' WHERE l.id = ?',
         (id,)

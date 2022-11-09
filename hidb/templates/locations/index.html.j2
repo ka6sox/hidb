@@ -6,10 +6,20 @@
 
 {% block content %}
 <table class="table table-borderless table-dark">
+  <thead>
+    <tr class="table-primary">
+    <th>Name</th>
+    <th>Item Count</th>
+    {% if g.user %}
+    <th>Actions</th>
+    {% endif %}
+    </tr>
+  </thead>
   <tbody>
     {% for location in locations %}
     <tr>
       <td>{{ location['description'] }}</td>
+      <td>{{ location['item_count'] }}</td>
       {% if g.user %}
       <td>
         <a class="action" href="{{ url_for('locations.update', id=location['id']) }}">Edit</a>&nbsp;&nbsp;&nbsp;
