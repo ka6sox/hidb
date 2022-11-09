@@ -14,11 +14,11 @@ def index():
   locations = get_locations()
   return render_template('search/index.html.j2', locations=locations)
 
-# TODO: add serial number search
 @bp.route('/search/run_search', methods=('POST',))
 def run_search():
     if request.method == 'POST':
       do_search_model_no = request.form.get('search_model_no')
+      do_search_serial_no = request.form.get('search_serial_no')
       do_search_description = request.form.get('search_description')
       do_search_locations = request.form.get('search_locations')
       do_search_sublocation = request.form.get('search_sublocations')
@@ -28,6 +28,9 @@ def run_search():
 
       if do_search_model_no == "search_model_no":
         query += "model_no LIKE '%%%s%%' AND " % request.form['model_no']
+        valid_query = True
+      if do_search_serial_no == "search_serial_no":
+        query += "serial_no LIKE '%%%s%%' AND " % request.form['serial_no']
         valid_query = True
       if do_search_description == "search_description":
         query += "description LIKE '%%%s%%' AND " % request.form['description']
