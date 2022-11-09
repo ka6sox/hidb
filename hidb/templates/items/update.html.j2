@@ -12,33 +12,38 @@
     <table class="table table-borderless table-dark">
       <tr>
         <td><label for="model_no">Make/Model:</label></td>
+        <td></td>
         <td><input name="model_no" id="model_no" value="{{ request.form['model_no'] or item['model_no'] }}" required>
         </td>
       </tr>
       <tr>
         <td><label for="serial_no">Serial #:</label></td>
-        <td><input name="serial_no" id="serial_no" value="{{ request.form['serial_no'] or item['serial_no'] }}"></td>
+        <td></td>
+        <td><input name="serial_no" autocomplete="off" id="serial_no" value="{{ request.form['serial_no'] or item['serial_no'] }}"></td>
       </tr>
       <tr>
         <td>
           <label for="qty">Quantity:</label>
         </td>
+        <td></td>
         <td>
-          <input name="qty" id="qty" value="{{ request.form['qty'] or item['qty'] }}" required>
+          <input name="qty" id="qty" type="number" value="{{ request.form['qty'] or item['qty'] }}" required>
         </td>
       </tr>
       <tr>
         <td>
           <label for="cost">Cost:</label>
         </td>
+        <td>$</td>
         <td>
-          <input name="cost" id="cost" value="{{ request.form['cost'] or item['cost'] }}" required>
+          <input name="cost" class="currency" id="cost" type="number" min="0.01" step="0.01" value="{{ '%.2f'|format(request.form['cost'] or item['cost']) }}" required>
         </td>
       </tr>
       <tr>
         <td>
           <label for="location">Location:</label>
         </td>
+        <td></td>
         <td>
           <select name="location">
             {% for l in locations %}
@@ -55,6 +60,7 @@
         <td>
           <label for="sublocation">Sublocation:</label>
         </td>
+        <td></td>
         <td>
           <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
         </td>
@@ -63,6 +69,7 @@
         <td>
           <label for="photo">Update Photo?</label>
         </td>
+        <td></td>
         <td>
           <input type="file" name="photo" />
         </td>
