@@ -13,6 +13,9 @@
 <th>Item</th>
       <th>Qty</th>
       <th>Location</th>
+      {% if g.user %}
+      <th>Actions</th>
+      {% endif %}
 </thead>
   <tbody>
     {% for r in results %}
@@ -21,6 +24,12 @@
     <A HREF="{{ url_for('items.details', id=r['id']) }}">{{ r['model_no'] }}</A></td>
     <td>{{ r['qty'] }}</td>
     <td>{{ r['location'] }}{% if r.sublocation|length %} / {{ r.sublocation }}{% endif %}</td>
+      {% if g.user %} {# ['id'] == post['author_id'] #}
+      <td><a href="{{ url_for('items.update', id=r['id']) }}">Edit</a>&nbsp;&nbsp;
+        <a href="{{ url_for('items.delete', id=r['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>
+      </td>
+      {% endif %}
+
     </tr>
     {% endfor %}
   </tbody>
