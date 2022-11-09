@@ -3,7 +3,7 @@
     this.each(function() {
       var wrapper = $("<div class='currency-input' />");
       $(this).wrap(wrapper);
-      $(this).before("<span class='currency-symbol'>$</span>");
+      $(this).before("<span class='currency-symbol'>&dollar;</span>");
       $(this).change(function() {
         var min = parseFloat($(this).attr("min"));
         var max = parseFloat($(this).attr("max"));

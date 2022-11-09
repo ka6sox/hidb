@@ -1,8 +1,9 @@
 .currency {
-  padding-left:12px;
+  padding-left: 12px;
 }
 
 .currency-symbol {
-  position:absolute;
+  position: absolute;
   padding: 2px 5px;
+  color: #000000;
 }
