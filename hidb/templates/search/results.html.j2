@@ -20,7 +20,7 @@
     <td><img src="/static/photos/{{ r['photo'] }}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;">&nbsp;&nbsp;&nbsp;
     <A HREF="{{ url_for('items.details', id=r['id']) }}">{{ r['model_no'] }}</A></td>
     <td>{{ r['qty'] }}</td>
-    <td>{{ r['location'] }}</td>
+    <td>{{ r['location'] }}{% if r.sublocation|length %} / {{ r.sublocation }}{% endif %}</td>
     </tr>
     {% endfor %}
   </tbody>

@@ -28,7 +28,7 @@ def get_item_count():
 def get_items(limit = None):
   db = get_db()
   query = 'SELECT i.id, model_no, serial_no, photo, description, qty, cost, date_added,' \
-          '(SELECT description FROM locations l WHERE location = l.id) as location ' \
+          '(SELECT description FROM locations l WHERE location = l.id) as location, sublocation ' \
           ' FROM items i JOIN users u ON i.creator_id = u.id' \
           ' ORDER BY date_added DESC'
   if limit is not None:
