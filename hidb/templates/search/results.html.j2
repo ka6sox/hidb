@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-<p>Found {{ results|length }} results.</p>
+<p>Found {{ results|length }} result{% if results|length > 1 %}s{% endif %}.</p>
 
 <table class="table table-borderless table-dark">
 <thead>
