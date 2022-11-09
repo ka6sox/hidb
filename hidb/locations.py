@@ -44,7 +44,7 @@ def create():
     return render_template('locations/create.html.j2')
 
 def get_locations():
-  print("entering get_locations")
+  #print("entering get_locations")
   # locations = get_db().execute(
   #     'SELECT l.id, description FROM locations l ORDER BY description ASC'
   # ).fetchall()
@@ -53,7 +53,7 @@ def get_locations():
       '   (SELECT COUNT(*) FROM items WHERE location = l.id) as item_count '
       '   FROM locations l ORDER BY description ASC'
   ).fetchall()
-  print(str(locations))
+  #print(str(locations))
   return locations
 
 def get_location(id, check_creator=True):
