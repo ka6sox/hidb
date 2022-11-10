@@ -21,6 +21,7 @@ $ pip3 install -r requirements.txt
 $ flask --app hidb init-db
 
 # Run the app
+# Add "-host=0.0.0.0" to allow access from the networh. otherwise only localhost is allowed
 $ flask --app hidb --debug run
 
 # Run unit tests
