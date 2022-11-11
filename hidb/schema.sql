@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS rooms;
 DROP TABLE IF EXISTS locations;
 DROP TABLE IF EXISTS items;
 
@@ -6,6 +7,13 @@ CREATE TABLE users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL
+);
+
+CREATE TABLE rooms (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  creator_id INTEGER NOT NULL,
+  description TEXT NOT NULL,
+  FOREIGN KEY (creator_id) REFERENCES users (id)
 );
 
 CREATE TABLE locations (
@@ -23,11 +31,13 @@ CREATE TABLE items (
   description TEXT,
   qty INTEGER NOT NULL,
   cost REAL NOT NULL,
+  room INTEGER NOT NULL,
   location INTEGER NOT NULL,
   sublocation TEXT,
   photo TEXT,
   date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   date_acquired TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (creator_id) REFERENCES users (id),
+  FOREIGN KEY (room) REFERENCES rooms (id)
   FOREIGN KEY (location) REFERENCES locations (id)
 );
