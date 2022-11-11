@@ -41,3 +41,13 @@ CREATE TABLE items (
   FOREIGN KEY (room) REFERENCES rooms (id)
   FOREIGN KEY (location) REFERENCES locations (id)
 );
+
+INSERT INTO users (username, password) VALUES ('admin', 'admin');
+
+INSERT INTO rooms (creator_id, description) VALUES (1, 'Bedroom');
+INSERT INTO rooms (creator_id, description) VALUES (1, 'Office');
+INSERT INTO rooms (creator_id, description) VALUES (1, 'Living Room');
+
+INSERT INTO locations (creator_id, description) VALUES (1, 'Shelf');
+INSERT INTO locations (creator_id, description) VALUES (1, 'Drawer');
+INSERT INTO locations (creator_id, description) VALUES (1, 'Cabinet');

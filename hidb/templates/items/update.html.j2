@@ -1,7 +1,7 @@
 {% extends 'base.html.j2' %}
 
 {% block header %}
-<h1>{% block title %}Edit "{{ item['model_no'] }}"{% endblock %}</h1>
+<h1>{% block title %}Edit "{{ item['name'] }}"{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -11,8 +11,8 @@
   <form method="post" enctype="multipart/form-data">
     <table class="table table-borderless table-dark">
       <tr>
-        <td><label for="model_no">Make/Model:</label></td>
-        <td><input name="model_no" autofocus="autofocus" id="model_no" value="{{ request.form['model_no'] or item['model_no'] }}" required>
+        <td><label for="name">Make/Model:</label></td>
+        <td><input name="name" autofocus="autofocus" id="name" value="{{ request.form['name'] or item['name'] }}" required>
         </td>
       </tr>
       <tr>

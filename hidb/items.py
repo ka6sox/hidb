@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 
 from hidb.auth import login_required
 from hidb.db import get_db
+from hidb.rooms import get_rooms, get_room
 from hidb.locations import get_locations, get_location
 
 bp = Blueprint('items', __name__)
@@ -27,7 +28,8 @@ def get_item_count():
 
 def get_items(limit = None):
   db = get_db()
-  query = 'SELECT i.id, model_no, serial_no, photo, description, qty, cost, date_added,' \
+  query = 'SELECT i.id, name, serial_no, photo, description, qty, cost, date_added,' \
+          '(SELECT description FROM rooms r WHERE room = r.id) as room, ' \
           '(SELECT description FROM locations l WHERE location = l.id) as location, sublocation ' \
           ' FROM items i JOIN users u ON i.creator_id = u.id' \
           ' ORDER BY date_added DESC'
@@ -43,21 +45,23 @@ def allowed_file_type(filename):
 @bp.route('/items/create', methods=('GET', 'POST'))
 @login_required
 def create():
+    rooms = get_rooms()
     locations = get_locations()
 
     if request.method == 'POST':
 
-        model_no = request.form['model_no']
+        name = request.form['name']
         serial_no = request.form['serial_no']
         description = request.form['description']
         qty = request.form['qty']
         cost = request.form['cost']
+        room = request.form['room']
         location = request.form['location']
         sublocation = request.form['sublocation']
 
         error = None
 
-        if not model_no:
+        if not name:
             error = 'Make/model number is required.'
         if not description:
             error = 'Description is required.'
@@ -65,6 +69,8 @@ def create():
             error = 'Quantity is required.'
         if not cost:
             error = 'Cost number is required.'
+        if not room:
+            error = 'Room is required.'
         if not location:
             error = 'Location is required.'
         if 'photo' not in request.files:
@@ -101,18 +107,18 @@ def create():
         else:
             db = get_db()
             db.execute(
-                'INSERT INTO items (model_no, serial_no, description, qty, cost, location, sublocation, photo, creator_id)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (model_no, serial_no, description, qty, cost, location, sublocation, filename, g.user['id'])
+                'INSERT INTO items (name, serial_no, description, qty, cost, room, location, sublocation, photo, creator_id)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (name, serial_no, description, qty, cost, room, location, sublocation, filename, g.user['id'])
             )
             db.commit()
             return redirect(url_for('items.index'))
 
-    return render_template('items/create.html.j2', locations=locations)
+    return render_template('items/create.html.j2', rooms=rooms, locations=locations)
 
 def get_item(id, check_author=True):
     item = get_db().execute(
-        'SELECT i.id, model_no, serial_no, description, qty, cost, location, sublocation, photo, date_added, creator_id'
+        'SELECT i.id, name, serial_no, description, qty, cost, location, sublocation, photo, date_added, creator_id'
         ' FROM items i JOIN users u ON i.creator_id = u.id'
         ' WHERE i.id = ?',
         (id,)
@@ -135,7 +141,7 @@ def update(id):
     locations = get_locations()
 
     if request.method == 'POST':
-        model_no = request.form['model_no']
+        name = request.form['name']
         serial_no = request.form['serial_no']
         description = request.form['description']
         qty = request.form['qty']
@@ -144,7 +150,7 @@ def update(id):
         sublocation = request.form['sublocation']
         error = None
 
-        if not model_no:
+        if not name:
             error = 'Make/model number is required.'
         if not description:
             error = 'Description is required.'
@@ -189,9 +195,9 @@ def update(id):
         else:
             db = get_db()
             db.execute(
-                'UPDATE items SET model_no = ?, serial_no = ?, description = ?, qty = ?, cost = ?, location = ?, sublocation = ?'
+                'UPDATE items SET name = ?, serial_no = ?, description = ?, qty = ?, cost = ?, location = ?, sublocation = ?'
                 ' WHERE id = ?',
-                (model_no, serial_no, description, qty, cost, location, sublocation, id)
+                (name, serial_no, description, qty, cost, location, sublocation, id)
             )
             db.commit()
             if new_filename is not None:

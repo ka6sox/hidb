@@ -11,8 +11,8 @@
   <form method="post" enctype="multipart/form-data">
     <table class="table table-borderless table-dark">
       <tr>
-        <td><label for="model_no">Make/Model:</label></td>
-        <td><input name="model_no" autofocus="autofocus" id="model_no" value="{{ request.form['model_no'] }}" required></td>
+        <td><label for="name">Make/Model:</label></td>
+        <td><input name="name" autofocus="autofocus" id="name" value="{{ request.form['name'] }}" required></td>
       </tr>
       <tr>
         <td><label for="serial_no">Serial #:</label></td>
@@ -31,6 +31,20 @@
           <label for="cost">Cost:</label>
         </td>
           <td><input name="cost" class="currency" type="number" id="cost" min="0.01" step="0.01" value="{{ request.form['cost'] }}" required></td>
+      </tr>
+      <tr>
+        <td>
+          <label for="room">Room:</label>
+        </td>
+        <td>
+          <select name="room">
+            {% for r in rooms %}
+            <option value="{{ r.id }}">{{ r.description }}</option>
+            {% endfor %}
+          </select>
+          <br />
+          <a class="action" href="{{ url_for('rooms.create') }}">Add New Room</a>
+        </td>
       </tr>
       <tr>
         <td>

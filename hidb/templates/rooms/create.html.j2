@@ -1,0 +1,15 @@
+{% extends 'base.html.j2' %}
+
+{% block header %}
+  <h1>{% block title %}Add New Room{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="description">Description</label>
+    <input name="description" autofocus="autofocus" id="description" value="{{ request.form['description'] }}" required>
+
+    <input type="submit" value="Save">
+  </form>
+{% endblock %}
+
