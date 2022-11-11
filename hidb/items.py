@@ -73,14 +73,16 @@ def create():
             error = 'Room is required.'
         if not location:
             error = 'Location is required.'
-        if 'photo' not in request.files:
+        if False and 'photo' not in request.files:
             error = 'No photo was provided.'
 
         photo = request.files['photo']
         # if user does not select file, browser also
         # submit an empty part without filename
         if photo.filename == '':
-            error = 'No photo was provided.'
+            # hack to make photos optional
+            filename = ""
+            #error = 'No photo was provided.'
         else:
           # blob = photo.read()
           # if len(blob) > current_app.config["MAX_CONTENT_LENGTH"]:
