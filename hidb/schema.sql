@@ -26,7 +26,7 @@ CREATE TABLE locations (
 CREATE TABLE items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   creator_id INTEGER NOT NULL,
-  model_no TEXT NOT NULL,
+  name TEXT NOT NULL,
   serial_no TEXT,
   description TEXT,
   qty INTEGER NOT NULL,
