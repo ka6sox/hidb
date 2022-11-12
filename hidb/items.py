@@ -15,9 +15,10 @@ bp = Blueprint('items', __name__)
 
 @bp.route('/items')
 def index():
-    num_items = get_item_count()
-    items = get_items(20)
-    return render_template('items/index.html.j2', num_items=num_items, items=items)
+    items = get_items()
+    rooms = get_rooms()
+    locations = get_locations()
+    return render_template('items/index.html.j2', rooms=rooms, locations=locations, items=items)
 
 def get_item_count():
   db = get_db()
