@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block content %}
-{% if locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please
-  do so first.</A>
+{% if rooms|length < 1 %} You have not defined any rooms yet. <A HREF="{{ url_for('rooms.create') }}">Please do so first</A>.
+{% elif locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please do so first.</A>
   {% else %}
   <form method="post" enctype="multipart/form-data">
     <table class="table table-borderless table-dark">
@@ -34,7 +34,7 @@
       </tr>
       <tr>
         <td>
-          <label for="room">Room:</label>
+          <label for="room">Location:</label>
         </td>
         <td>
           <select name="room">
@@ -42,31 +42,14 @@
             <option value="{{ r.id }}">{{ r.description }}</option>
             {% endfor %}
           </select>
-          <br />
-          <a class="action" href="{{ url_for('rooms.create') }}">Add New Room</a>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="location">Location:</label>
-        </td>
-        <td>
+          <a class="action" href="{{ url_for('rooms.create') }}">Add New Room</a><br />
           <select name="location">
             {% for l in locations %}
             <option value="{{ l.id }}">{{ l.description }}</option>
             {% endfor %}
           </select>
-          <br />
-          <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="sublocation">Sublocation:</label>
-        </td>
-        <td>
+          <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a><br />
           <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
-        </td>
       </tr>
       <tr>
         <td>
