@@ -5,14 +5,21 @@
 {% endblock %}
 
 {% block content %}
-<p>There {% if num_items > 1 %} are {% else %} is {% endif %} {{ num_items }} item{% if num_items > 1 %}s{% endif %} in the database. Here are the most recent entries:</p>
+{% if items|length == 0 or rooms|length == 0 or locations|length == 0 %}
+<ul>
+{% if rooms|length == 0 %}<li>You have not yet set up any rooms. <a href="{{ url_for('rooms.create') }}">Add a new room</a> first.</li>{% endif %}
+{% if locations|length == 0 %}<li>You have not yet set up any locations. <a href="{{ url_for('locations.create') }}">Add a new location</a> first.</li>{% endif %}
+{% if items|length == 0 %}<li>There are no items in the database. <a href="{{ url_for('items.create') }}">Add a new item</a></li>{% endif %}
+</ul>
+{% else %}
+<p>There {% if items|length > 1 %} are {% else %} is {% endif %} {{ items|length }} item{% if items|length > 1 %}s{% endif %} in the database. Here are the most recent entries:</p>
 <table class="table table-borderless table-dark">
   <thead>
     <tr class="table-primary">
       <th>Item</th>
       {# <th>Qty</th> #}
       <th>Location</th>
-      {% if 0 or g.user %}
+      {% if 0 and g.user %}
       <th>Actions</th>
       {% endif %}
     </tr>
@@ -25,7 +32,7 @@
       <A HREF="{{ url_for('items.details', id=item['id']) }}">{{ item.name }}</A></td>
       {# <td>{{ item.qty }}</td> #}
       <td>{{ item.room }} / {{ item.location }}{% if item.sublocation|length %} / {{ item.sublocation }}{% endif %}</td>
-      {% if 0 or g.user %} {# ['id'] == post['author_id'] #}
+      {% if 0 and g.user %} {# ['id'] == post['author_id'] #}
       <td><a href="{{ url_for('items.update', id=item['id']) }}">Edit</a>&nbsp;&nbsp;
         <a href="{{ url_for('items.delete', id=item['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>
       </td>
@@ -37,5 +44,6 @@
 
 {% if g.user %}
 <p><a href="{{ url_for('items.create') }}">Add a new item</a></p>
+{% endif %}
 {% endif %}
 {% endblock %}
