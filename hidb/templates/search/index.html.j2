@@ -1,7 +1,7 @@
 {% extends 'base.html.j2' %}
 
 {% block header %}
-<h1>{% block title %}Search{% endblock %}</h1>
+<h1>{% block title %}Find{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -13,14 +13,8 @@
     <table class="table table-borderless table-dark">
       <tbody>
         <tr>
-          <td><input type="checkbox" name="search_name" value="search_name">&nbsp;&nbsp;&nbsp;<label for="name">Make/Model:</label></td>
+          <td><input type="checkbox" name="search_name" value="search_name">&nbsp;&nbsp;&nbsp;<label for="name">Name:</label></td>
           <td><input name="name"autofocus="autofocus" id="name"></td>
-        </tr>
-
-        <tr>
-          <td><input type="checkbox" name="search_serial_no" value="search_serial_no">&nbsp;&nbsp;&nbsp;
-          <label for="serial_no">Serial #:</label></td>
-          <td><input name="serial_no" id="serial_no"></td>
         </tr>
 
         <tr>
@@ -45,6 +39,12 @@
           <td><input type="checkbox" name="search_sublocation" value="search_sublocation">&nbsp;&nbsp;&nbsp;
           <label for="sublocation">Sublocation:</label></td>
           <td><input name="sublocation" id="sublocation"></td>
+        </tr>
+
+        <tr>
+          <td><input type="checkbox" name="search_serial_no" value="search_serial_no">&nbsp;&nbsp;&nbsp;
+          <label for="serial_no">Serial #:</label></td>
+          <td><input name="serial_no" id="serial_no"></td>
         </tr>
       </tbody>
     </table>
