@@ -38,7 +38,6 @@ $ pytest
 $ coverage run -m pytest
 $ coverage report
 $ coverage html
-
 ```
 
 ## Running in a Production setting
@@ -64,5 +63,4 @@ $ docker-compose up
 
 # Shut down Docker container
 $ docker-compose down
-
 ```
