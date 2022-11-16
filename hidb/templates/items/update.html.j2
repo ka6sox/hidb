@@ -72,7 +72,7 @@
           <label for="sublocation">Sublocation:</label>
         </td>
         <td>
-          <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
+          <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] or item['sublocation'] }}">
         </td>
       </tr>
       <tr>
