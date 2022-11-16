@@ -68,8 +68,6 @@ def create():
             error = 'Description is required.'
         if not qty:
             error = 'Quantity is required.'
-        if not cost:
-            error = 'Cost number is required.'
         if not room:
             error = 'Room is required.'
         if not location:
@@ -161,8 +159,6 @@ def update(id):
             error = 'Description is required.'
         if not qty:
             error = 'Quantity is required.'
-        if not cost:
-            error = 'Cost number is required.'
         if not room:
             error = 'Room is required.'
         if not location:

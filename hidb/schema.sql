@@ -30,7 +30,7 @@ CREATE TABLE items (
   serial_no TEXT,
   description TEXT,
   qty INTEGER NOT NULL,
-  cost REAL NOT NULL,
+  cost REAL,
   room INTEGER NOT NULL,
   location INTEGER NOT NULL,
   sublocation TEXT,

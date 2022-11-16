@@ -32,7 +32,7 @@
           <label for="cost">Cost:</label>
         </td>
         <td>
-          <input name="cost" class="currency" id="cost" type="number" min="0.01" step="0.01" value="{{ '%.2f'|format(request.form['cost'] or item['cost']) }}" required>
+          <input name="cost" class="currency" id="cost" type="number" min="0.01" step="0.01" value="{% if request.form['cost']|length or item['cost']|length %}{{ '%.2f'|format(request.form['cost'] or item['cost']) }}{% else %}{% endif %}">
         </td>
       </tr>
       <tr>
