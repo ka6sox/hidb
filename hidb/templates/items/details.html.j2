@@ -44,7 +44,7 @@
     {% endif %}
     </div>
   <div class="col-md-8">
-    <img src="/static/photos/{{ item['photo'] }}" class="img-fluid">
+    <img src="{% if item['photo']|length > 0 %}{{ url_for('static', filename='photos/'+item['photo']) }}{% else %}{{ url_for('static', filename='no_image.png') }}{% endif %}" class="img-fluid">
   </div>
 
 </div>
