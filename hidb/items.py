@@ -121,7 +121,7 @@ def create():
 
 def get_item(id, check_author=True):
     item = get_db().execute(
-        'SELECT i.id, name, serial_no, description, qty, cost, location, sublocation, photo, date_added, creator_id'
+        'SELECT i.id, name, serial_no, description, qty, cost, room, location, sublocation, photo, date_added, creator_id'
         ' FROM items i JOIN users u ON i.creator_id = u.id'
         ' WHERE i.id = ?',
         (id,)
@@ -223,8 +223,9 @@ def update(id):
 @bp.route('/items/<int:id>/details', methods=('GET',))
 def details(id):
     item = get_item(id)
+    room = get_room(item["room"])
     location = get_location(item["location"])
-    return render_template('items/details.html.j2', item=item, location=location["description"])
+    return render_template('items/details.html.j2', item=item, room=room["description"], location=location["description"])
 
 @bp.route('/items/<int:id>/delete', methods=('GET', 'POST',))
 @login_required
