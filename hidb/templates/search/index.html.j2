@@ -24,6 +24,18 @@
         </tr>
 
         <tr>
+          <td><input type="checkbox" name="search_rooms" value="search_rooms">&nbsp;&nbsp;&nbsp;
+          <label for="room">Room(s):</label></td>
+          <td>
+            <select name="rooms" multiple>
+              {% for r in rooms %}
+              <option value="{{ r.id }}">{{ r.description }}</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+
+        <tr>
           <td><input type="checkbox" name="search_locations" value="search_locations">&nbsp;&nbsp;&nbsp;
           <label for="location">Location(s):</label></td>
           <td>

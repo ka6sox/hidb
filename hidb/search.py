@@ -6,13 +6,15 @@ from werkzeug.exceptions import abort
 from hidb.auth import login_required
 from hidb.db import get_db
 from .locations import get_locations
+from .rooms import get_rooms
 
 bp = Blueprint('search', __name__)
 
 @bp.route('/search')
 def index():
+  rooms = get_rooms()
   locations = get_locations()
-  return render_template('search/index.html.j2', locations=locations)
+  return render_template('search/index.html.j2', rooms=rooms, locations=locations)
 
 @bp.route('/search/run_search', methods=('POST',))
 def run_search():
@@ -20,6 +22,7 @@ def run_search():
       do_search_name = request.form.get('search_name')
       do_search_serial_no = request.form.get('search_serial_no')
       do_search_description = request.form.get('search_description')
+      do_search_rooms = request.form.get('search_rooms')
       do_search_locations = request.form.get('search_locations')
       do_search_sublocation = request.form.get('search_sublocations')
 
@@ -34,6 +37,9 @@ def run_search():
         valid_query = True
       if do_search_description == "search_description":
         query += "description LIKE '%%%s%%' AND " % request.form['description']
+        valid_query = True
+      if do_search_rooms == "search_rooms":
+        query += "room IN (" + ",".join(request.form.getlist('rooms')) + ") AND "
         valid_query = True
       if do_search_locations == "search_locations":
         query += "location IN (" + ",".join(request.form.getlist('locations')) + ") AND "
@@ -66,6 +72,6 @@ def run_search():
 
       if error is not None:
         flash(error)
-        return render_template('search/index.html.j2', locations=get_locations())
+        return render_template('search/index.html.j2', rooms=get_rooms(), locations=get_locations())
       else:
         return render_template('search/results.html.j2', results=results)
