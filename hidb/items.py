@@ -141,6 +141,7 @@ def get_item(id, check_author=True):
 @login_required
 def update(id):
     item = get_item(id)
+    rooms = get_rooms()
     locations = get_locations()
 
     if request.method == 'POST':
@@ -149,6 +150,7 @@ def update(id):
         description = request.form['description']
         qty = request.form['qty']
         cost = request.form['cost']
+        room = request.form['room']
         location = request.form['location']
         sublocation = request.form['sublocation']
         error = None
@@ -161,6 +163,8 @@ def update(id):
             error = 'Quantity is required.'
         if not cost:
             error = 'Cost number is required.'
+        if not room:
+            error = 'Room is required.'
         if not location:
             error = 'Location is required.'
 
@@ -198,9 +202,9 @@ def update(id):
         else:
             db = get_db()
             db.execute(
-                'UPDATE items SET name = ?, serial_no = ?, description = ?, qty = ?, cost = ?, location = ?, sublocation = ?'
+                'UPDATE items SET name = ?, serial_no = ?, description = ?, qty = ?, cost = ?, room = ?, location = ?, sublocation = ?'
                 ' WHERE id = ?',
-                (name, serial_no, description, qty, cost, location, sublocation, id)
+                (name, serial_no, description, qty, cost, room, location, sublocation, id)
             )
             db.commit()
             if new_filename is not None:
@@ -218,7 +222,7 @@ def update(id):
 
             return redirect(url_for('items.index'))
 
-    return render_template('items/update.html.j2', item=item, locations=locations)
+    return render_template('items/update.html.j2', item=item, rooms=rooms, locations=locations)
 
 @bp.route('/items/<int:id>/details', methods=('GET',))
 def details(id):

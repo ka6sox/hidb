@@ -37,6 +37,22 @@
       </tr>
       <tr>
         <td>
+          <label for="room">Room:</label>
+        </td>
+        <td>
+          <select name="room">
+            {% for r in rooms %}
+            <option value="{{ r.id }}" {% if item and r.id==item['room'] %} selected {% endif %}> {{ r.description
+              }}
+            </option>
+            {% endfor %}
+          </select>
+          <br />
+          <a class="action" href="{{ url_for('rooms.create') }}">Add New Room</a>
+        </td>
+      </tr>
+      <tr>
+        <td>
           <label for="location">Location:</label>
         </td>
         <td>
