@@ -210,11 +210,12 @@ def update(id):
                   (new_filename, id)
               )
               db.commit()
-              # delete the old file
+              # delete the old file (if one exists)
               # print("deleting old file: " + old_filename)
               # print("new file: " + new_filename)
-              old_fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], old_filename)
-              os.remove(old_fullpath)
+              if old_filename is not None and len(old_filename) > 0:
+                old_fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], old_filename)
+                os.remove(old_fullpath)
 
             return redirect(url_for('items.index'))
 
