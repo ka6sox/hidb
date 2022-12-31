@@ -20,7 +20,13 @@
     <td>Quantity:</td>
     <td>{{ item['qty'] }}</td>
     </tr>
-    {% if item['cost']|length %}
+    {% if item['cost'] is string and item['cost']|length %}
+    <tr>
+    <td>Cost:</td>
+    <td>{{ item['cost']|format_currency }}</td>
+    </tr>
+    <tr>
+    {% elif item['cost'] is float and item['cost'] > 0.0 %}
     <tr>
     <td>Cost:</td>
     <td>{{ item['cost']|format_currency }}</td>
