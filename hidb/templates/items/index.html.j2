@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+{% if g.user %}
 {% if items|length == 0 or rooms|length == 0 or locations|length == 0 %}
 <ul>
 {% if rooms|length == 0 %}<li>You have not yet set up any rooms. <a href="{{ url_for('rooms.create') }}">Add a new room</a> first.</li>{% endif %}
@@ -45,5 +46,8 @@
 {% if g.user %}
 <p><a href="{{ url_for('items.create') }}">Add a new item</a></p>
 {% endif %}
+{% endif %}
+{% else %}
+<p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
 {% endif %}
 {% endblock %}

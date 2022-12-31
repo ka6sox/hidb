@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+{% if g.user %}
 <table class="table table-borderless table-dark">
   <thead>
     <tr class="table-primary">
@@ -35,5 +36,7 @@
 {% if g.user %}
 <p><a href="{{ url_for('rooms.create') }}">Add a new room</a></p>
 {% endif %}
-
+{% else %}
+<p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
+{% endif %}
 {% endblock %}

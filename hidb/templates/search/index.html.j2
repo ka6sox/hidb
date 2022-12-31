@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+{% if g.user %}
 {% if locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please
   do so first.</A>
   {% else %}
@@ -63,4 +64,7 @@
     <input class="submit" type="submit" value="Search">
   </form>
   {% endif %}
+{% else %}
+<p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
+{% endif %}
   {% endblock %}

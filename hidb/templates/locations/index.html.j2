@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+{% if g.user %}
 <table class="table table-borderless table-dark">
   <thead>
     <tr class="table-primary">
@@ -36,4 +37,7 @@
 <p><a href="{{ url_for('locations.create') }}">Add a new location</a></p>
 {% endif %}
 
+{% else %}
+<p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
+{% endif %}
 {% endblock %}
