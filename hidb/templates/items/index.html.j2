@@ -13,6 +13,10 @@
 {% if items|length == 0 %}<li>There are no items in the database. <a href="{{ url_for('items.create') }}">Add a new item</a></li>{% endif %}
 </ul>
 {% else %}
+{% if g.user %}
+<p><a href="{{ url_for('items.create') }}">Add a new item</a></p>
+{% endif %}
+
 <p>There {% if items|length > 1 %} are {% else %} is {% endif %} {{ items|length }} item{% if items|length > 1 %}s{% endif %} in the database. Here are the most recent entries:</p>
 <table class="table table-borderless table-dark">
   <thead>
@@ -42,10 +46,6 @@
   </tbody>
   {% endfor %}
 </table>
-
-{% if g.user %}
-<p><a href="{{ url_for('items.create') }}">Add a new item</a></p>
-{% endif %}
 {% endif %}
 {% else %}
 <p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
