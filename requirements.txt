@@ -5,3 +5,4 @@ coverage==6.5.0
 wheel==0.37.1
 gunicorn==20.1.0
 konfik==2.0.5
+Werkzeug==2.3.7
