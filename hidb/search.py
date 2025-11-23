@@ -4,7 +4,7 @@ from flask import (
 from werkzeug.exceptions import abort
 
 from hidb.auth import login_required
-from hidb.db import get_db
+from hidb.models import db, Item, Location, Room
 from .locations import get_locations
 from .rooms import get_rooms
 
@@ -26,49 +26,61 @@ def run_search():
       do_search_locations = request.form.get('search_locations')
       do_search_sublocation = request.form.get('search_sublocations')
 
-      query = 'SELECT i.id, name, serial_no, description, qty, cost, date_added, sublocation, photo, (SELECT description FROM locations l WHERE location = l.id) as location FROM items i WHERE '
+      # Build query using SQLAlchemy (prevents SQL injection)
+      query = db.session.query(
+          Item.id,
+          Item.name,
+          Item.serial_no,
+          Item.description,
+          Item.qty,
+          Item.cost,
+          Item.date_added,
+          Item.sublocation,
+          Item.photo,
+          Location.description.label('location')
+      ).join(Location, Item.location_id == Location.id)
+      
       valid_query = False
 
       if do_search_name == "search_name":
-        query += "name LIKE '%%%s%%' AND " % request.form['name']
+        search_term = request.form['name']
+        query = query.filter(Item.name.like(f'%{search_term}%'))
         valid_query = True
       if do_search_serial_no == "search_serial_no":
-        query += "serial_no LIKE '%%%s%%' AND " % request.form['serial_no']
+        search_term = request.form['serial_no']
+        query = query.filter(Item.serial_no.like(f'%{search_term}%'))
         valid_query = True
       if do_search_description == "search_description":
-        query += "description LIKE '%%%s%%' AND " % request.form['description']
+        search_term = request.form['description']
+        query = query.filter(Item.description.like(f'%{search_term}%'))
         valid_query = True
       if do_search_rooms == "search_rooms":
-        query += "room IN (" + ",".join(request.form.getlist('rooms')) + ") AND "
+        room_ids = [int(r) for r in request.form.getlist('rooms')]
+        query = query.filter(Item.room_id.in_(room_ids))
         valid_query = True
       if do_search_locations == "search_locations":
-        query += "location IN (" + ",".join(request.form.getlist('locations')) + ") AND "
+        location_ids = [int(l) for l in request.form.getlist('locations')]
+        query = query.filter(Item.location_id.in_(location_ids))
         valid_query = True
       if do_search_sublocation == "search_sublocation":
-        query += "sublocation LIKE '%%%s%%'" + request.form['sublocation']
+        search_term = request.form['sublocation']
+        query = query.filter(Item.sublocation.like(f'%{search_term}%'))
         valid_query = True
 
-      if query.endswith('AND '):
-        query = query[:-4]
-
       if valid_query:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute(query)
-        db.commit()
-        results = cursor.fetchall()
-
-        # print(len(results))
-        # print(results)
+        results = query.all()
 
         if len(results) == 0:
           error = "No matching items were found."
         else:
           error = None
+          # Convert to dict-like objects for template compatibility
+          results = [{'id': r.id, 'name': r.name, 'serial_no': r.serial_no,
+                     'description': r.description, 'qty': r.qty, 'cost': r.cost,
+                     'date_added': r.date_added, 'sublocation': r.sublocation,
+                     'photo': r.photo, 'location': r.location} for r in results]
       else:
         error = "You must select at least one search criteria."
-
-      print("DEBUG: query = %s" % query)
 
       if error is not None:
         flash(error)

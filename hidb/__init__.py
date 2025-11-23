@@ -10,7 +10,8 @@ def create_app(test_config=None):
 
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'hidb.sqlite'),
+        SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(app.instance_path, 'hidb.sqlite'),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
         UPLOAD_FOLDER='hidb/static/photos',
         ALLOWED_EXTENSIONS={'png', 'jpg', 'jpeg', 'gif', 'heif', 'heic'},
         MAX_CONTENT_LENGTH=(16 * 1024 * 1024)

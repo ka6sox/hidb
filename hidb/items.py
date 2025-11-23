@@ -5,9 +5,10 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
+from sqlalchemy import select
 
 from hidb.auth import login_required
-from hidb.db import get_db
+from hidb.models import db, Item, Room, Location
 from hidb.rooms import get_rooms, get_room
 from hidb.locations import get_locations, get_location
 
@@ -21,23 +22,35 @@ def index():
     return render_template('items/index.html.j2', rooms=rooms, locations=locations, items=items)
 
 def get_item_count():
-  db = get_db()
-  num_items = db.execute(
-      'SELECT COUNT(id) FROM items'
-  ).fetchone()[0]
-  return num_items
+    return Item.query.count()
 
-def get_items(limit = None):
-  db = get_db()
-  query = 'SELECT i.id, name, serial_no, photo, description, qty, cost, date_added,' \
-          '(SELECT description FROM rooms r WHERE room = r.id) as room, ' \
-          '(SELECT description FROM locations l WHERE location = l.id) as location, sublocation ' \
-          ' FROM items i JOIN users u ON i.creator_id = u.id' \
-          ' ORDER BY date_added DESC'
-  if limit is not None:
-    query += ' LIMIT ' + str(limit)
-  items = db.execute(query).fetchall()
-  return items
+def get_items(limit=None):
+    query = db.session.query(
+        Item.id,
+        Item.name,
+        Item.serial_no,
+        Item.photo,
+        Item.description,
+        Item.qty,
+        Item.cost,
+        Item.date_added,
+        Room.description.label('room'),
+        Location.description.label('location'),
+        Item.sublocation
+    ).join(Room, Item.room_id == Room.id)\
+     .join(Location, Item.location_id == Location.id)\
+     .order_by(Item.date_added.desc())
+    
+    if limit is not None:
+        query = query.limit(limit)
+    
+    items = query.all()
+    
+    # Convert to dict-like objects for template compatibility
+    return [{'id': i.id, 'name': i.name, 'serial_no': i.serial_no, 'photo': i.photo, 
+             'description': i.description, 'qty': i.qty, 'cost': i.cost, 
+             'date_added': i.date_added, 'room': i.room, 'location': i.location, 
+             'sublocation': i.sublocation} for i in items]
 
 def allowed_file_type(filename):
     return '.' in filename and \
@@ -106,32 +119,48 @@ def create():
         if error is not None:
             flash(error)
         else:
-            db = get_db()
-            db.execute(
-                'INSERT INTO items (name, serial_no, description, qty, cost, room, location, sublocation, photo, creator_id)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (name, serial_no, description, qty, cost, room, location, sublocation, filename, g.user['id'])
+            item = Item(
+                name=name,
+                serial_no=serial_no if serial_no else None,
+                description=description,
+                qty=int(qty),
+                cost=float(cost) if cost else None,
+                room_id=int(room),
+                location_id=int(location),
+                sublocation=sublocation if sublocation else None,
+                photo=filename if filename else None,
+                creator_id=g.user.id
             )
-            db.commit()
+            db.session.add(item)
+            db.session.commit()
             return redirect(url_for('items.index'))
 
     return render_template('items/create.html.j2', rooms=rooms, locations=locations)
 
 def get_item(id, check_author=True):
-    item = get_db().execute(
-        'SELECT i.id, name, serial_no, description, qty, cost, room, location, sublocation, photo, date_added, creator_id'
-        ' FROM items i JOIN users u ON i.creator_id = u.id'
-        ' WHERE i.id = ?',
-        (id,)
-    ).fetchone()
+    item = Item.query.get(id)
 
     if item is None:
         abort(404, f"Item id {id} doesn't exist.")
 
-    if check_author and g.user is not None and item['creator_id'] != g.user['id']:
+    if check_author and g.user is not None and item.creator_id != g.user.id:
         abort(403)
 
-    return item
+    # Return dict-like object for template compatibility
+    return {
+        'id': item.id,
+        'name': item.name,
+        'serial_no': item.serial_no,
+        'description': item.description,
+        'qty': item.qty,
+        'cost': item.cost,
+        'room': item.room_id,
+        'location': item.location_id,
+        'sublocation': item.sublocation,
+        'photo': item.photo,
+        'date_added': item.date_added,
+        'creator_id': item.creator_id
+    }
 
 # BUG: it appears that sometimes when changing an image, the previous image isn't deleted
 
@@ -196,27 +225,26 @@ def update(id):
         if error is not None:
             flash(error)
         else:
-            db = get_db()
-            db.execute(
-                'UPDATE items SET name = ?, serial_no = ?, description = ?, qty = ?, cost = ?, room = ?, location = ?, sublocation = ?'
-                ' WHERE id = ?',
-                (name, serial_no, description, qty, cost, room, location, sublocation, id)
-            )
-            db.commit()
+            item_obj = Item.query.get(id)
+            item_obj.name = name
+            item_obj.serial_no = serial_no if serial_no else None
+            item_obj.description = description
+            item_obj.qty = int(qty)
+            item_obj.cost = float(cost) if cost else None
+            item_obj.room_id = int(room)
+            item_obj.location_id = int(location)
+            item_obj.sublocation = sublocation if sublocation else None
+            
             if new_filename is not None:
-              db.execute(
-                  'UPDATE items SET photo = ?'
-                  ' WHERE id = ?',
-                  (new_filename, id)
-              )
-              db.commit()
-              # delete the old file (if one exists)
-              # print("deleting old file: " + old_filename)
-              # print("new file: " + new_filename)
-              if old_filename is not None and len(old_filename) > 0:
-                old_fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], old_filename)
-                os.remove(old_fullpath)
-
+                item_obj.photo = new_filename
+                # delete the old file (if one exists)
+                # print("deleting old file: " + old_filename)
+                # print("new file: " + new_filename)
+                if old_filename is not None and len(old_filename) > 0:
+                    old_fullpath = os.path.join(current_app.config["UPLOAD_FOLDER"], old_filename)
+                    os.remove(old_fullpath)
+            
+            db.session.commit()
             return redirect(url_for('items.index'))
 
     return render_template('items/update.html.j2', item=item, rooms=rooms, locations=locations)
@@ -232,11 +260,14 @@ def details(id):
 @login_required
 def delete(id):
     i = get_item(id)
-    db = get_db()
-    db.execute('DELETE FROM items WHERE id = ?', (id,))
-    db.commit()
+    item_obj = Item.query.get(id)
+    
     # also delete the photo
-    fullpath = os.path.join(current_app.config['UPLOAD_FOLDER'], i['photo'])
-    if os.path.exists(fullpath):
-        os.remove(fullpath)
+    if i['photo']:
+        fullpath = os.path.join(current_app.config['UPLOAD_FOLDER'], i['photo'])
+        if os.path.exists(fullpath):
+            os.remove(fullpath)
+    
+    db.session.delete(item_obj)
+    db.session.commit()
     return redirect(url_for('items.index'))
