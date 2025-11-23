@@ -251,9 +251,9 @@ def update(id):
 
 @bp.route('/items/<int:id>/details', methods=('GET',))
 def details(id):
-    item = get_item(id)
-    room = get_room(item["room"])
-    location = get_location(item["location"])
+    item = get_item(id, check_author=False)
+    room = get_room(item["room"], check_creator=False)
+    location = get_location(item["location"], check_creator=False)
     return render_template('items/details.html.j2', item=item, room=room["description"], location=location["description"])
 
 @bp.route('/items/<int:id>/delete', methods=('GET', 'POST',))
