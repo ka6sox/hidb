@@ -22,5 +22,14 @@ services:
     ports:
       - 5000:5000
 
+    # Persist database and uploaded photos
+    volumes:
+      - hidb-instance:/hidb/instance
+      - hidb-photos:/hidb/hidb/static/photos
+
     # restart at boot
     restart: unless-stopped
+
+volumes:
+  hidb-instance:
+  hidb-photos:
