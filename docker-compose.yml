@@ -21,3 +21,6 @@ services:
     # Expose ports
     ports:
       - 5000:5000
+
+    # restart at boot
+    restart: unless-stopped
