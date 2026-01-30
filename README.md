@@ -56,11 +56,11 @@ container, which is another viable option for hosting this app.
 ```shell
 # Build Docker container
 # Note: must re-run this command to incorporate changes
-$ docker-compose build
+$ docker compose build
 
 # Start up Docker container
-$ docker-compose up
+$ docker compose up
 
 # Shut down Docker container
-$ docker-compose down
+$ docker compose down
 ```
