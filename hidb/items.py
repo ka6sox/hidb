@@ -64,14 +64,14 @@ def create():
 
     if request.method == 'POST':
 
-        name = request.form['name']
-        serial_no = request.form['serial_no']
-        description = request.form['description']
-        qty = request.form['qty']
-        cost = request.form['cost']
-        room = request.form['room']
-        location = request.form['location']
-        sublocation = request.form['sublocation']
+        name = request.form.get('name', '').strip()
+        serial_no = request.form.get('serial_no', '').strip()
+        description = request.form.get('description', '').strip()
+        qty = request.form.get('qty', '').strip()
+        cost = request.form.get('cost', '').strip()
+        room = request.form.get('room', '').strip()
+        location = request.form.get('location', '').strip()
+        sublocation = request.form.get('sublocation', '').strip()
 
         error = None
 
@@ -172,14 +172,14 @@ def update(id):
     locations = get_locations()
 
     if request.method == 'POST':
-        name = request.form['name']
-        serial_no = request.form['serial_no']
-        description = request.form['description']
-        qty = request.form['qty']
-        cost = request.form['cost']
-        room = request.form['room']
-        location = request.form['location']
-        sublocation = request.form['sublocation']
+        name = request.form.get('name', '').strip()
+        serial_no = request.form.get('serial_no', '').strip()
+        description = request.form.get('description', '').strip()
+        qty = request.form.get('qty', '').strip()
+        cost = request.form.get('cost', '').strip()
+        room = request.form.get('room', '').strip()
+        location = request.form.get('location', '').strip()
+        sublocation = request.form.get('sublocation', '').strip()
         error = None
 
         if not name:

@@ -23,7 +23,7 @@
     <td><img src="/static/photos/{{ r['photo'] }}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;">&nbsp;&nbsp;&nbsp;
     <A HREF="{{ url_for('items.details', id=r['id']) }}">{{ r['name'] }}</A></td>
     <td>{{ r['qty'] }}</td>
-    <td>{{ r['location'] }}{% if r.sublocation|length %} / {{ r.sublocation }}{% endif %}</td>
+    <td>{{ r['location'] }}{% if r.sublocation %} / {{ r.sublocation }}{% endif %}</td>
       {% if g.user %} {# ['id'] == post['author_id'] #}
       <td><a href="{{ url_for('items.update', id=r['id']) }}">Edit</a>&nbsp;&nbsp;
         <a href="{{ url_for('items.delete', id=r['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>
