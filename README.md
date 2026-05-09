@@ -13,10 +13,32 @@ Use [Pyenv](https://github.com/pyenv/pyenv) to manage multiple Python versions.
 
 ```shell
 # Developed using Python 3.9.5
+
+# Install pyenv (examples):
+# - Debian/Ubuntu: apt install pyenv
+# - RHEL/CentOS/Fedora: yum install pyenv (or dnf install pyenv)
+
+# Ensure pyenv is initialized for your shell (bash example):
+# Add the following to your ~/.bashrc (and/or ~/.profile depending on your system),
+# then restart your terminal:
+#   export PYENV_ROOT="$HOME/.pyenv"
+#   export PATH="$PYENV_ROOT/bin:$PATH"
+#   eval "$(pyenv init - bash)"
+#
+# Verify pyenv is available:
+$ pyenv --version
+
+# Install the project's Python version (one-time)
 $ pyenv install 3.9.5
 
+# Select the Python version for this repository
+$ pyenv local 3.9.5
+
+# Verify your shell is using the selected Python
+$ python --version
+
 # Set up a Python virtualenv
-$ python3 -m venv env
+$ python -m venv env
 $ source env/bin/activate
 
 # Install dependencies
