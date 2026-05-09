@@ -1,3 +1,10 @@
+.navbar-brand-icon {
+  height: 2.25rem;
+  width: 2.25rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .currency {
   padding-left: 12px;
 }

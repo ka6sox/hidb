@@ -14,7 +14,10 @@
     {# Navbar example from: https://getbootstrap.com/docs/5.1/components/navbar/ #}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="{{ url_for('items.index') }}">Home Inventory Database</a>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('items.index') }}">
+          <img src="{{ url_for('static', filename='hidb-icon-128.png') }}" alt="" class="navbar-brand-icon" width="36" height="36" decoding="async">
+          Home Inventory Database
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
