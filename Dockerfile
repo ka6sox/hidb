@@ -1,5 +1,5 @@
 # start by pulling the python image
-FROM python:3.9.15-bullseye
+FROM python:3.13.2-bookworm
 
 # Make a working directory
 RUN mkdir /hidb
