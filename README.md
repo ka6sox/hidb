@@ -12,7 +12,7 @@ to run this in production, please see "Running in a Production setting" below.
 Use [Pyenv](https://github.com/pyenv/pyenv) to manage multiple Python versions.
 
 ```shell
-# Developed using Python 3.9.5
+# Developed using Python 3.13.2
 
 # Install pyenv (examples):
 # - Debian/Ubuntu: apt install pyenv
@@ -29,10 +29,10 @@ Use [Pyenv](https://github.com/pyenv/pyenv) to manage multiple Python versions.
 $ pyenv --version
 
 # Install the project's Python version (one-time)
-$ pyenv install 3.9.5
+$ pyenv install 3.13.2
 
 # Select the Python version for this repository
-$ pyenv local 3.9.5
+$ pyenv local 3.13.2
 
 # Verify your shell is using the selected Python
 $ python --version
