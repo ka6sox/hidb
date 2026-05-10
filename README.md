@@ -72,6 +72,8 @@ $ coverage html
 
 ## Database migrations (Flask-Migrate / Alembic)
 
+Step-by-step workflow for editing models and shipping revisions: [HOW_TO_CHANGE_SCHEMA.md](HOW_TO_CHANGE_SCHEMA.md).
+
 Schema changes are tracked under `migrations/versions/`. Typical commands (from the repo root, venv active):
 
 | Command | Purpose |
