@@ -44,6 +44,22 @@ $ source env/bin/activate
 # Install dependencies
 $ pip3 install -r requirements.txt
 
+## Database backend (SQLite or PostgreSQL)
+
+By default the app uses **SQLite** at `<instance>/hidb.sqlite` (the Flask instance folder, usually `instance/` next to the package).
+
+To use **PostgreSQL** (including Amazon RDS or Aurora PostgreSQL), set a URL before running the app or migrations:
+
+```shell
+export DATABASE_URL='postgresql://USER:PASSWORD@HOST:5432/DBNAME'
+# Optional alias:
+# export SQLALCHEMY_DATABASE_URI='postgresql://...'
+```
+
+`postgres://` URLs are accepted and normalized. Bare `postgresql://` schemes are wired to the **psycopg** (v3) driver.
+
+Keep using `flask --app hidb db upgrade` (or `docker compose exec web flask db upgrade`) against whichever database the environment points at.
+
 # Apply database migrations (creates / updates tables; safe for existing data)
 $ flask --app hidb db upgrade
 
