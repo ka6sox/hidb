@@ -84,17 +84,33 @@ pip install -r requirements.txt
 
 ### Initialize Database
 
-The database initialization command remains the same:
+**Normal setup (keeps data, applies pending migrations):**
+
+```bash
+flask --app hidb db upgrade
+```
+
+**Destructive reset (drops all tables, then reapplies migrations — all data is lost):**
 
 ```bash
 flask --app hidb init-db
 ```
 
-This will now use SQLAlchemy's `create_all()` method instead of executing `schema.sql`.
+The `init-db` command no longer uses raw `schema.sql`; it uses **Flask-Migrate (Alembic)** revisions under `migrations/versions/`.
+
+### Flask-Migrate workflow
+
+- **After pulling changes** that include new migration files: `flask --app hidb db upgrade`
+- **After you change models** (`hidb/models.py`):  
+  `flask --app hidb db migrate -m "describe change"`  
+  Review the generated file under `migrations/versions/`, commit it with your code.
+- **Existing SQLite DB created before Alembic was added**, schema already matches the initial revision: run **once**  
+  `flask --app hidb db stamp head`  
+  so Alembic records the current state without trying to recreate tables (which would error).
 
 ### Migrating Existing Data
 
-If you have an existing SQLite database, it should work without changes as the table schema remains identical. The column names and types are preserved.
+If you have an existing SQLite database, it should work without changes as the table schema remains identical. The column names and types are preserved. Add Alembic tracking with `db stamp head` as above if you were on a pre-migration checkout.
 
 **Important**: The existing `schema.sql` file is no longer used by the init-db command, but is kept for reference.
 
@@ -211,9 +227,8 @@ If you need to rollback, the original raw SQL version can be restored from git h
 
 ## Future Improvements
 
-Now that SQLAlchemy is in place, consider:
-1. Using Flask-Migrate for database migrations
-2. Adding more validation at the model level
-3. Implementing proper many-to-many relationships if needed
-4. Adding database indexes for performance
-5. Using SQLAlchemy events for automatic timestamps
+Now that SQLAlchemy and Flask-Migrate are in place, consider:
+1. Adding more validation at the model level
+2. Implementing proper many-to-many relationships if needed
+3. Adding database indexes for performance
+4. Using SQLAlchemy events for automatic timestamps

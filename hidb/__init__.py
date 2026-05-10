@@ -38,6 +38,11 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
 
+    from flask_migrate import Migrate
+    from .models import db as sqlalchemy_db
+
+    Migrate(app, sqlalchemy_db)
+
     from . import auth
     app.register_blueprint(auth.bp)
 
