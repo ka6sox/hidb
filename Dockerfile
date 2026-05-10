@@ -17,7 +17,7 @@ COPY . /hidb
 ENV FLASK_DEBUG 0
 
 # Set entrypoint
-ENV FLASK_APP flask_run.py
+ENV FLASK_APP=hidb
 ENV FLASK_RUN_HOST 0.0.0.0
 EXPOSE 4000
 

@@ -4,15 +4,19 @@ from hidb.models import db
 
 
 def init_db():
-    """Initialize the database by creating all tables."""
-    db.create_all()
+    """Apply the latest migration (requires application context)."""
+    from flask_migrate import upgrade
+
+    upgrade()
 
 
 @click.command('init-db')
 def init_db_command():
-    """Clear the existing data and create new tables."""
+    """Drop all tables and re-apply migrations from scratch (destructive)."""
+    from flask_migrate import upgrade
+
     db.drop_all()
-    db.create_all()
+    upgrade()
     click.echo('Initialized the database.')
 
 

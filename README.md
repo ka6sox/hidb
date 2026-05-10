@@ -44,7 +44,15 @@ $ source env/bin/activate
 # Install dependencies
 $ pip3 install -r requirements.txt
 
-# Init the db schema
+# Apply database migrations (creates / updates tables; safe for existing data)
+$ flask --app hidb db upgrade
+
+# If you already had a SQLite DB from before migrations were added, and the
+# schema already matches the app, stamp Alembic once (does not change tables):
+# $ flask --app hidb db stamp head
+
+# Destructive reset: drop all tables and re-apply migrations from scratch
+# (same as the old init-db behavior — all data is lost)
 $ flask --app hidb init-db
 
 # Run the app
@@ -60,6 +68,24 @@ $ pytest
 $ coverage run -m pytest
 $ coverage report
 $ coverage html
+```
+
+## Database migrations (Flask-Migrate / Alembic)
+
+Schema changes are tracked under `migrations/versions/`. Typical commands (from the repo root, venv active):
+
+| Command | Purpose |
+| --- | --- |
+| `flask --app hidb db upgrade` | Apply all pending migrations (use this after `git pull` or on deploy). |
+| `flask --app hidb db migrate -m "short message"` | Autogenerate a new revision from your SQLAlchemy models (review the file before committing). |
+| `flask --app hidb db downgrade` | Roll back one revision (use with care; SQLite has limits on some operations). |
+| `flask --app hidb db stamp head` | Mark the DB as current **without** running migrations (only when the schema already matches `head`). |
+| `flask --app hidb init-db` | **Destructive:** `drop_all` + `upgrade` — wipes the database and rebuilds from migrations. |
+
+Docker Compose example after a deploy or image update:
+
+```shell
+docker compose exec web flask db upgrade
 ```
 
 ## Running in a Production setting
