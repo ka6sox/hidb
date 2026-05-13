@@ -6,16 +6,16 @@
 
 {% block content %}
 {% if g.user %}
-{% if locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please
-  do so first.</A>
-  {% else %}
+{% if places|length < 1 %}
+<p>You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.</p>
+{% else %}
   <form action="{{ url_for('search.run_search') }}" method="post">
 
     <table class="table table-borderless table-dark">
       <tbody>
         <tr>
           <td><input type="checkbox" name="search_name" value="search_name">&nbsp;&nbsp;&nbsp;<label for="name">Name:</label></td>
-          <td><input name="name"autofocus="autofocus" id="name"></td>
+          <td><input name="name" autofocus id="name"></td>
         </tr>
 
         <tr>
@@ -25,33 +25,21 @@
         </tr>
 
         <tr>
-          <td><input type="checkbox" name="search_rooms" value="search_rooms">&nbsp;&nbsp;&nbsp;
-          <label for="room">Room(s):</label></td>
+          <td><input type="checkbox" name="search_places" value="search_places">&nbsp;&nbsp;&nbsp;
+          <label for="places">Place(s):</label></td>
           <td>
-            <select name="rooms" multiple>
-              {% for r in rooms %}
-              <option value="{{ r.id }}">{{ r.description }}</option>
+            <select name="places" id="places" multiple size="6">
+              {% for p in places %}
+              <option value="{{ p.id }}">{{ p.label }}</option>
               {% endfor %}
             </select>
           </td>
         </tr>
 
         <tr>
-          <td><input type="checkbox" name="search_locations" value="search_locations">&nbsp;&nbsp;&nbsp;
-          <label for="location">Location(s):</label></td>
-          <td>
-            <select name="locations" multiple>
-              {% for l in locations %}
-              <option value="{{ l.id }}">{{ l.description }}</option>
-              {% endfor %}
-            </select>
-          </td>
-        </tr>
-
-        <tr>
-          <td><input type="checkbox" name="search_sublocation" value="search_sublocation">&nbsp;&nbsp;&nbsp;
-          <label for="sublocation">Sublocation:</label></td>
-          <td><input name="sublocation" id="sublocation"></td>
+          <td><input type="checkbox" name="search_place_subtree" value="search_place_subtree">&nbsp;&nbsp;&nbsp;
+          <label for="search_place_subtree_hint">Include nested places</label></td>
+          <td><span class="text-muted small">When checked, matches items under selected places too (children in the tree).</span></td>
         </tr>
 
         <tr>
@@ -63,7 +51,7 @@
     </table>
     <input class="submit" type="submit" value="Search">
   </form>
-  {% endif %}
+{% endif %}
 {% else %}
 <p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
 {% endif %}

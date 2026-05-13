@@ -1,0 +1,34 @@
+{% extends 'base.html.j2' %}
+
+{% block header %}
+  <h1>{% block title %}Add a place{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <table class="table table-borderless table-dark">
+      <tr>
+        <td><label for="parent_id">Inside (optional):</label></td>
+        <td>
+          <select name="parent_id" id="parent_id">
+            <option value="">— Root (top level) —</option>
+            {% for p in parents %}
+            <option value="{{ p.id }}">{{ p.label }}</option>
+            {% endfor %}
+          </select>
+          <p class="small text-muted mb-0">Leave as root for a room or top-level area; pick a parent for shelves, boxes, etc.</p>
+        </td>
+      </tr>
+      <tr>
+        <td><label for="name">Name:</label></td>
+        <td><input name="name" id="name" autofocus required value="{{ request.form.get('name', '') }}"></td>
+      </tr>
+      <tr>
+        <td><label for="description">Notes (optional):</label></td>
+        <td><textarea name="description" id="description" rows="3">{{ request.form.get('description', '') }}</textarea></td>
+      </tr>
+    </table>
+    <input type="submit" value="Save">
+  </form>
+  <p><a href="{{ url_for('places.index') }}">Cancel</a></p>
+{% endblock %}

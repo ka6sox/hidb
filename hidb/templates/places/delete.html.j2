@@ -1,0 +1,23 @@
+{% extends 'base.html.j2' %}
+
+{% block header %}
+  <h1>{% block title %}Delete place{% endblock %}</h1>
+  <p>{{ place.path }}</p>
+{% endblock %}
+
+{% block content %}
+{% if blocked %}
+<p>You cannot delete this place yet.</p>
+<ul>
+  {% if child_count > 0 %}<li>It has {{ child_count }} child place(s). Delete or move those first.</li>{% endif %}
+  {% if item_count > 0 %}<li>{{ item_count }} item(s) are stored here. Move or delete those items first.</li>{% endif %}
+</ul>
+<p><a href="{{ url_for('places.index') }}">Back to places</a></p>
+{% else %}
+<p>Are you sure you want to delete <strong>{{ place.name }}</strong>?</p>
+<form method="post">
+  <input class="danger" type="submit" value="Delete permanently">
+</form>
+<p><a href="{{ url_for('places.index') }}">Cancel</a></p>
+{% endif %}
+{% endblock %}

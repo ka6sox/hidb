@@ -5,26 +5,25 @@
 {% endblock %}
 
 {% block content %}
-{% if locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please
-  do so first.</A>
-  {% else %}
+{% if places|length < 1 %} You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.
+{% else %}
   <form method="post" enctype="multipart/form-data">
     <table class="table table-borderless table-dark">
       <tr>
         <td><label for="name">Make/Model:</label></td>
-        <td><input name="name" autofocus="autofocus" id="name" value="{{ request.form['name'] or item['name'] }}" required>
+        <td><input name="name" autofocus="autofocus" id="name" value="{{ request.form.get('name', item['name']) }}" required>
         </td>
       </tr>
       <tr>
         <td><label for="serial_no">Serial #:</label></td>
-        <td><input name="serial_no" autocomplete="off" id="serial_no" value="{{ request.form['serial_no'] or item['serial_no'] }}"></td>
+        <td><input name="serial_no" autocomplete="off" id="serial_no" value="{{ request.form.get('serial_no', item['serial_no'] or '') }}"></td>
       </tr>
       <tr>
         <td>
           <label for="qty">Quantity:</label>
         </td>
         <td>
-          <input name="qty" id="qty" type="number" value="{{ request.form['qty'] or item['qty'] }}" required>
+          <input name="qty" id="qty" type="number" value="{{ request.form.get('qty', item['qty']) }}" required>
         </td>
       </tr>
       <tr>
@@ -32,47 +31,21 @@
           <label for="cost">Cost:</label>
         </td>
         <td>
-          <input name="cost" class="currency" id="cost" type="number" min="0.01" step="0.01" value="{% if (request.form['cost'] and request.form['cost']) or (item['cost'] is string and item['cost']) or (item['cost'] is float and item['cost'] > 0.0) %}{{ '%.2f'|format(request.form['cost'] or item['cost']) }}{% else %}{% endif %}">
+          <input name="cost" class="currency" id="cost" type="number" min="0.01" step="0.01" value="{% if request.form.get('cost') or (item['cost'] is string and item['cost']) or (item['cost'] is float and item['cost'] > 0.0) %}{{ '%.2f'|format(request.form.get('cost') or item['cost']) }}{% endif %}">
         </td>
       </tr>
       <tr>
         <td>
-          <label for="room">Room:</label>
+          <label for="place_id">Place:</label>
         </td>
         <td>
-          <select name="room">
-            {% for r in rooms %}
-            <option value="{{ r.id }}" {% if item and r.id==item['room'] %} selected {% endif %}> {{ r.description
-              }}
-            </option>
+          <select name="place_id" id="place_id" required>
+            {% for p in places %}
+            <option value="{{ p.id }}" {% if item and p.id == item['place_id'] %}selected{% endif %}>{{ p.label }}</option>
             {% endfor %}
           </select>
           <br />
-          <a class="action" href="{{ url_for('rooms.create') }}">Add New Room</a>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="location">Location:</label>
-        </td>
-        <td>
-          <select name="location">
-            {% for l in locations %}
-            <option value="{{ l.id }}" {% if item and l.id==item['location'] %} selected {% endif %}> {{ l.description
-              }}
-            </option>
-            {% endfor %}
-          </select>
-          <br />
-          <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="sublocation">Sublocation:</label>
-        </td>
-        <td>
-          <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] or item['sublocation'] }}">
+          <a class="action" href="{{ url_for('places.create') }}">Add a place</a>
         </td>
       </tr>
       <tr>
@@ -85,12 +58,12 @@
       </tr>
     </table>
     <p><label for="description">Description:</label><br />
-      <textarea name="description" id="description">{{ request.form['description'] or item['description'] }}</textarea>
+      <textarea name="description" id="description">{{ request.form.get('description', item['description'] or '') }}</textarea>
     </p>
 
     <input type="submit" value="Save">
   </form>
     <a href="{{ url_for('items.details', id=item['id']) }}">Cancel</a><br />
 
-  {% endif %}
+{% endif %}
   {% endblock %}
