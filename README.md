@@ -43,6 +43,7 @@ $ source env/bin/activate
 
 # Install dependencies
 $ pip3 install -r requirements.txt
+```
 
 ## Database backend (SQLite or PostgreSQL)
 
@@ -60,6 +61,7 @@ export DATABASE_URL='postgresql://USER:PASSWORD@HOST:5432/DBNAME'
 
 Keep using `flask --app hidb db upgrade` (or `docker compose exec web flask db upgrade`) against whichever database the environment points at.
 
+```shell
 # Apply database migrations (creates / updates tables; safe for existing data)
 $ flask --app hidb db upgrade
 
