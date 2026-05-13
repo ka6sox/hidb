@@ -6,11 +6,10 @@
 
 {% block content %}
 {% if g.user %}
-{% if items|length == 0 or rooms|length == 0 or locations|length == 0 %}
+{% if items|length == 0 or places|length == 0 %}
 <ul>
-{% if rooms|length == 0 %}<li>You have not yet set up any rooms. <a href="{{ url_for('rooms.create') }}">Add a new room</a> first.</li>{% endif %}
-{% if locations|length == 0 %}<li>You have not yet set up any locations. <a href="{{ url_for('locations.create') }}">Add a new location</a> first.</li>{% endif %}
-{% if items|length == 0 %}<li>There are no items in the database. <a href="{{ url_for('items.create') }}">Add a new item</a></li>{% endif %}
+{% if places|length == 0 %}<li>You have not yet defined any places. <a href="{{ url_for('places.create') }}">Add a place</a> first (for example a room, then shelves or boxes under it).</li>{% endif %}
+{% if items|length == 0 and places|length > 0 %}<li>There are no items in the database. <a href="{{ url_for('items.create') }}">Add a new item</a></li>{% endif %}
 </ul>
 {% else %}
 {% if g.user %}
@@ -22,7 +21,6 @@
   <thead>
     <tr class="table-primary">
       <th>Item</th>
-      {# <th>Qty</th> #}
       <th>Location</th>
       {% if 0 and g.user %}
       <th>Actions</th>
@@ -35,16 +33,15 @@
       <td>
       <img src="{% if item['photo'] %}{{ url_for('static', filename='photos/'+item['photo']) }}{% else %}{{ url_for('static', filename='no_image.png') }}{% endif %}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;">&nbsp;&nbsp;&nbsp;
       <A HREF="{{ url_for('items.details', id=item['id']) }}">{{ item.name }}</A></td>
-      {# <td>{{ item.qty }}</td> #}
-      <td>{{ item.room }} / {{ item.location }}{% if item.sublocation %} / {{ item.sublocation }}{% endif %}</td>
-      {% if 0 and g.user %} {# ['id'] == post['author_id'] #}
+      <td>{{ item.place_path }}</td>
+      {% if 0 and g.user %}
       <td><a href="{{ url_for('items.update', id=item['id']) }}">Edit</a>&nbsp;&nbsp;
         <a href="{{ url_for('items.delete', id=item['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>
       </td>
       {% endif %}
     </tr>
+    {% endfor %}
   </tbody>
-  {% endfor %}
 </table>
 {% endif %}
 {% else %}

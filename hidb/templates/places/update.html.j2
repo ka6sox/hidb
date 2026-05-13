@@ -1,0 +1,27 @@
+{% extends 'base.html.j2' %}
+
+{% block header %}
+  <h1>{% block title %}Edit "{{ place['name'] }}"{% endblock %}</h1>
+  <p class="text-muted">{{ place.path }}</p>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+  <table class="table table-borderless table-dark">
+    <tr>
+      <td><label for="name">Name:</label></td>
+      <td><input name="name" id="name" autofocus required
+        value="{{ request.form.get('name', place['name']) }}"></td>
+    </tr>
+    <tr>
+      <td><label for="description">Notes:</label></td>
+      <td><textarea name="description" id="description" rows="3">{{ request.form.get('description', place['description'] or '') }}</textarea></td>
+    </tr>
+  </table>
+  <input type="submit" value="Save">
+</form>
+<p>
+  <a href="{{ url_for('places.index') }}">Back to places</a><br>
+  <a class="action text-danger" href="{{ url_for('places.delete', id=place['id']) }}">Delete this place…</a>
+</p>
+{% endblock %}

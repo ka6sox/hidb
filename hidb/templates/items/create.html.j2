@@ -5,51 +5,46 @@
 {% endblock %}
 
 {% block content %}
-{% if rooms|length < 1 %} You have not defined any rooms yet. <A HREF="{{ url_for('rooms.create') }}">Please do so first</A>.
-{% elif locations|length < 1 %} You have not defined any locations yet. <A HREF="{{ url_for('locations.create') }}">Please do so first.</A>
-  {% else %}
+{% if places|length < 1 %} You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.
+{% else %}
   <form method="post" enctype="multipart/form-data">
     <table class="table table-borderless table-dark">
       <tr>
         <td><label for="name">Name:</label></td>
-        <td><input name="name" autofocus="autofocus" id="name" value="{{ request.form['name'] }}" required></td>
+        <td><input name="name" autofocus="autofocus" id="name" value="{{ request.form.get('name', '') }}" required></td>
       </tr>
       <tr>
         <td><label for="serial_no">Serial #:</label></td>
-        <td><input name="serial_no" autocomplete="off" id="serial_no" value="{{ request.form['serial_no'] }}"></td>
+        <td><input name="serial_no" autocomplete="off" id="serial_no" value="{{ request.form.get('serial_no', '') }}"></td>
       </tr>
       <tr>
         <td>
           <label for="qty">Quantity:</label>
         </td>
         <td>
-          <input name="qty" type="number" id="qty" value="{{ request.form['qty'] }}" required>
+          <input name="qty" type="number" id="qty" value="{{ request.form.get('qty', '') }}" required>
         </td>
       </tr>
       <tr>
         <td>
           <label for="cost">Cost:</label>
         </td>
-          <td><input name="cost" class="currency" type="number" id="cost" min="0.01" step="0.01" value="{{ request.form['cost'] }}"></td>
+          <td><input name="cost" class="currency" type="number" id="cost" min="0.01" step="0.01" value="{{ request.form.get('cost', '') }}"></td>
       </tr>
       <tr>
         <td>
-          <label for="room">Location:</label>
+          <label for="place_id">Place:</label>
         </td>
         <td>
-          <select name="room">
-            {% for r in rooms %}
-            <option value="{{ r.id }}">{{ r.description }}</option>
+          <select name="place_id" id="place_id" required>
+            <option value="">— Select —</option>
+            {% for p in places %}
+            <option value="{{ p.id }}">{{ p.label }}</option>
             {% endfor %}
           </select>
-          <a class="action" href="{{ url_for('rooms.create') }}">Add New Room</a><br />
-          <select name="location">
-            {% for l in locations %}
-            <option value="{{ l.id }}">{{ l.description }}</option>
-            {% endfor %}
-          </select>
-          <a class="action" href="{{ url_for('locations.create') }}">Add New Location</a><br />
-          <input name="sublocation" id="sublocation" value="{{ request.form['sublocation'] }}">
+          <br />
+          <a class="action" href="{{ url_for('places.create') }}">Add a place</a>
+        </td>
       </tr>
       <tr>
         <td>
@@ -61,12 +56,12 @@
       </tr>
     </table>
     <p><label for="description">Description:</label><br />
-      <textarea name="description" id="description">{{ request.form['description'] }}</textarea>
+      <textarea name="description" id="description">{{ request.form.get('description', '') }}</textarea>
     </p>
 
     <input type="submit" value="Save">
   </form>
   <a href="{{ url_for('items.index') }}">Cancel</a>
 
-  {% endif %}
+{% endif %}
   {% endblock %}

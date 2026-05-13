@@ -22,10 +22,9 @@ def create_app(test_config=None):
      )
 
     if test_config is None:
-        # load the instance config, if it exists, when not testing
+        # load the instance config, if it exists, when not running tests
         app.config.from_pyfile('config.py', silent=True)
     else:
-        # load the test config if passed in
         app.config.from_mapping(test_config)
 
     final_uri = app.config['SQLALCHEMY_DATABASE_URI']
@@ -35,13 +34,11 @@ def create_app(test_config=None):
         else {'pool_pre_ping': True, 'pool_recycle': 280}
     )
 
-    # ensure the instance folder exists
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
 
-    # a simple page that says hello
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
@@ -59,19 +56,11 @@ def create_app(test_config=None):
 
     from . import items
     app.register_blueprint(items.bp)
-    app.add_url_rule('/', endpoint='items.index')
-    app.add_url_rule('/items', endpoint='index')
 
-    from . import rooms
-    app.register_blueprint(rooms.bp)
-    app.add_url_rule('/rooms', endpoint='index')
-
-    from . import locations
-    app.register_blueprint(locations.bp)
-    app.add_url_rule('/locations', endpoint='index')
+    from . import places
+    app.register_blueprint(places.bp)
 
     from . import search
     app.register_blueprint(search.bp)
-    app.add_url_rule('/search', endpoint='index')
 
     return app

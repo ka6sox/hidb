@@ -1,0 +1,40 @@
+{% extends 'base.html.j2' %}
+
+{% block header %}
+<h1>{% block title %}Places{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{% if g.user %}
+<p><a href="{{ url_for('places.create') }}">Add a place</a></p>
+
+<table class="table table-borderless table-dark">
+  <thead>
+    <tr class="table-primary">
+      <th>Path</th>
+      <th>Items here</th>
+      {% if g.user %}
+      <th>Actions</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for place in places %}
+    <tr>
+      <td>{{ place.path }}</td>
+      <td>{{ place.item_count }}</td>
+      {% if g.user %}
+      <td>
+        <a class="action" href="{{ url_for('places.update', id=place['id']) }}">Edit</a>&nbsp;&nbsp;&nbsp;
+        <a class="action" href="{{ url_for('places.delete', id=place['id']) }}">Delete</a>
+      </td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+<p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
+{% endif %}
+{% endblock %}

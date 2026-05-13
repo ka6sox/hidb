@@ -31,10 +31,7 @@
               <a class="nav-link" href="{{ url_for('items.index') }}">Items</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('rooms.index') }}">Rooms</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('locations.index') }}">Locations</a>
+              <a class="nav-link" href="{{ url_for('places.index') }}">Places</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('search.index') }}">Find</a>
@@ -62,7 +59,7 @@
         </div>
         <div class="d-flex">
           {% if g.user %}
-          <span>Logged in as {{ g.user['username'] }}&nbsp;&nbsp;</span></li>
+          <span>Logged in as {{ g.user.username }}&nbsp;&nbsp;</span></li>
           <a href="{{ url_for('auth.logout') }}">Log Out</a></li>
           {% else %}
           <a href="{{ url_for('auth.register') }}">Register</a>&nbsp;&nbsp;
