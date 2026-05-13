@@ -7,6 +7,22 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
 
+item_tags = db.Table(
+    "item_tags",
+    db.Column(
+        "item_id",
+        Integer,
+        ForeignKey("items.id"),
+        primary_key=True,
+    ),
+    db.Column(
+        "tag_id",
+        Integer,
+        ForeignKey("tags.id"),
+        primary_key=True,
+    ),
+)
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -78,6 +94,7 @@ class Item(db.Model):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     qty: Mapped[int] = mapped_column(Integer, nullable=False)
     cost: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    sublocation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     photo: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     date_added: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
@@ -88,6 +105,27 @@ class Item(db.Model):
 
     creator: Mapped["User"] = relationship(back_populates="items")
     place: Mapped["Place"] = relationship(back_populates="items")
+    tags: Mapped[List["Tag"]] = relationship(
+        secondary=item_tags,
+        back_populates="items",
+        order_by="Tag.name",
+    )
 
     def __repr__(self) -> str:
         return f"<Item {self.name}>"
+
+
+class Tag(db.Model):
+    __tablename__ = "tags"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
+    items: Mapped[List["Item"]] = relationship(
+        secondary=item_tags,
+        back_populates="tags",
+        order_by="Item.name",
+    )
+
+    def __repr__(self) -> str:
+        return f"<Tag {self.name}>"

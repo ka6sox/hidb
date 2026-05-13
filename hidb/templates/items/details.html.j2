@@ -32,8 +32,14 @@
     {% endif %}
     <tr>
     <td>Location:</td>
-    <td>{{ item['place_path'] }}</td>
+    <td>{{ item['location_path'] }}</td>
     </tr>
+    {% if item['tag_list'] %}
+    <tr>
+    <td>Tags:</td>
+    <td>{{ item['tag_list'] }}</td>
+    </tr>
+    {% endif %}
     <tr>
     <td>Acquired:</td>
     <td>{{ item['date_added'].strftime('%Y-%m-%d %H:%M') }}</td>

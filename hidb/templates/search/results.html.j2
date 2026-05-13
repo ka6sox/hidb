@@ -13,6 +13,7 @@
 <th>Item</th>
       <th>Qty</th>
       <th>Location</th>
+      <th>Tags</th>
       {% if g.user %}
       <th>Actions</th>
       {% endif %}
@@ -23,7 +24,8 @@
     <td><img src="{% if r['photo'] %}{{ url_for('static', filename='photos/'+r['photo']) }}{% else %}{{ url_for('static', filename='no_image.png') }}{% endif %}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;">&nbsp;&nbsp;&nbsp;
     <A HREF="{{ url_for('items.details', id=r['id']) }}">{{ r['name'] }}</A></td>
     <td>{{ r['qty'] }}</td>
-    <td>{{ r.place_path }}</td>
+    <td>{{ r.location_path }}</td>
+    <td>{{ r.tag_list }}</td>
       {% if g.user %}
       <td><a href="{{ url_for('items.update', id=r['id']) }}">Edit</a>&nbsp;&nbsp;
         <a href="{{ url_for('items.delete', id=r['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>

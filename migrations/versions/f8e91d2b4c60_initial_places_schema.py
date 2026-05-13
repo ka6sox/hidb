@@ -44,6 +44,13 @@ def upgrade():
     op.create_index(op.f("ix_places_creator_id"), "places", ["creator_id"], unique=False)
     op.create_index(op.f("ix_places_parent_id"), "places", ["parent_id"], unique=False)
     op.create_table(
+        "tags",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("name", sa.String(length=255), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("name"),
+    )
+    op.create_table(
         "items",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("creator_id", sa.Integer(), nullable=False),
@@ -53,6 +60,7 @@ def upgrade():
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("qty", sa.Integer(), nullable=False),
         sa.Column("cost", sa.Float(), nullable=True),
+        sa.Column("sublocation", sa.Text(), nullable=True),
         sa.Column("photo", sa.Text(), nullable=True),
         sa.Column("date_added", sa.DateTime(), nullable=False),
         sa.Column("date_acquired", sa.DateTime(), nullable=False),
@@ -62,12 +70,24 @@ def upgrade():
     )
     op.create_index(op.f("ix_items_creator_id"), "items", ["creator_id"], unique=False)
     op.create_index(op.f("ix_items_place_id"), "items", ["place_id"], unique=False)
+    op.create_table(
+        "item_tags",
+        sa.Column("item_id", sa.Integer(), nullable=False),
+        sa.Column("tag_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(["item_id"], ["items.id"]),
+        sa.ForeignKeyConstraint(["tag_id"], ["tags.id"]),
+        sa.PrimaryKeyConstraint("item_id", "tag_id"),
+    )
+    op.create_index(op.f("ix_item_tags_tag_id"), "item_tags", ["tag_id"], unique=False)
 
 
 def downgrade():
+    op.drop_index(op.f("ix_item_tags_tag_id"), table_name="item_tags")
+    op.drop_table("item_tags")
     op.drop_index(op.f("ix_items_place_id"), table_name="items")
     op.drop_index(op.f("ix_items_creator_id"), table_name="items")
     op.drop_table("items")
+    op.drop_table("tags")
     op.drop_index(op.f("ix_places_parent_id"), table_name="places")
     op.drop_index(op.f("ix_places_creator_id"), table_name="places")
     op.drop_table("places")
