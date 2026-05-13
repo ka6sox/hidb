@@ -1,11 +1,6 @@
+# HIDB
 
-<p align="center">
-  <h1>HIDB</h1>
-</p>
-
-<p align="center">
-  <strong>(Home Inventory DataBase)</strong>
-</p>
+**Home Inventory DataBase**
 
 How many of us have bought something and put it “someplace” and forgot where you put it only to have to go buy it again? I wanted something simple that would walk me right to where I put the thing I need, so I created the HIDB project.
 
