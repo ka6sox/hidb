@@ -1,6 +1,19 @@
-# hidb
 
-Home Inventory DataBase
+<p align="center">
+  <h1>HIDB</h1>
+</p>
+
+<p align="center">
+  <strong>(Home Inventory DataBase)</strong>
+</p>
+
+How many of us have bought something and put it “someplace” and forgot where you put it only to have to go buy it again? I wanted something simple that would walk me right to where I put the thing I need, so I created the HIDB project.
+
+HIDB is a relational database for keeping track of where you put things in your home using your phone or tablet. The goal of this app is to make it so that you can add items, and describe where you put them so you can find them easily.
+
+You can run HIDB on any computer or even a Pi! You can then access HIDB from your phone, tablet or computer to create, edit, and find where you put things. It runs as a Docker Image so it can be self-contained and easy to deploy. We are looking into a HIDB hosting service for those who would like to use this but would rather not run it locally.
+
+
 
 **Note: this README is a work in progress.**
 
