@@ -14,7 +14,7 @@ from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 
 from hidb.auth import login_required
-from hidb.models import db, Item, Place
+from hidb.models import db, Item, Place, Tag
 from hidb.places import get_place_options, place_path, place_paths_for_ids
 
 bp = Blueprint("items", __name__)
@@ -36,6 +36,42 @@ def get_item_count():
     return Item.query.count()
 
 
+def item_location_path(path, sublocation):
+    if sublocation:
+        return f"{path} ({sublocation})" if path else sublocation
+    return path
+
+
+def parse_tag_names(raw_tags):
+    tag_names = []
+    seen = set()
+    for raw_tag in raw_tags.split(","):
+        name = raw_tag.strip().lower()
+        if name and name not in seen:
+            tag_names.append(name)
+            seen.add(name)
+    return tag_names
+
+
+def tag_list(tags):
+    return ", ".join(sorted(t.name for t in tags))
+
+
+def tags_for_input(raw_tags):
+    tag_names = parse_tag_names(raw_tags)
+    if not tag_names:
+        return []
+
+    existing_tags = {
+        tag.name: tag for tag in Tag.query.filter(Tag.name.in_(tag_names)).all()
+    }
+    for name in tag_names:
+        if name not in existing_tags:
+            existing_tags[name] = Tag(name=name)
+            db.session.add(existing_tags[name])
+    return [existing_tags[name] for name in tag_names]
+
+
 def get_items(limit=None):
     query = Item.query.order_by(Item.date_added.desc())
     if limit is not None:
@@ -52,7 +88,13 @@ def get_items(limit=None):
             "qty": r.qty,
             "cost": r.cost,
             "date_added": r.date_added,
+            "sublocation": r.sublocation,
+            "tags": sorted(t.name for t in r.tags),
+            "tag_list": tag_list(r.tags),
             "place_path": paths.get(r.place_id, ""),
+            "location_path": item_location_path(
+                paths.get(r.place_id, ""), r.sublocation
+            ),
         }
         for r in rows
     ]
@@ -78,6 +120,8 @@ def create():
         qty = request.form.get("qty", "").strip()
         cost = request.form.get("cost", "").strip()
         place_raw = request.form.get("place_id", "").strip()
+        sublocation = request.form.get("sublocation", "").strip()
+        tags_raw = request.form.get("tags", "")
 
         error = None
 
@@ -128,9 +172,11 @@ def create():
                 qty=int(qty),
                 cost=float(cost) if cost else None,
                 place_id=place_id,
+                sublocation=sublocation if sublocation else None,
                 photo=filename if filename else None,
                 creator_id=g.user.id,
             )
+            item.tags = tags_for_input(tags_raw)
             db.session.add(item)
             db.session.commit()
             return redirect(url_for("items.index"))
@@ -147,6 +193,7 @@ def get_item(id, check_author=True):
     if check_author and g.user is not None and item.creator_id != g.user.id:
         abort(403)
 
+    path = place_path(item.place_id)
     return {
         "id": item.id,
         "name": item.name,
@@ -155,7 +202,11 @@ def get_item(id, check_author=True):
         "qty": item.qty,
         "cost": item.cost,
         "place_id": item.place_id,
-        "place_path": place_path(item.place_id),
+        "sublocation": item.sublocation,
+        "tags": sorted(t.name for t in item.tags),
+        "tag_list": tag_list(item.tags),
+        "place_path": path,
+        "location_path": item_location_path(path, item.sublocation),
         "photo": item.photo,
         "date_added": item.date_added,
         "creator_id": item.creator_id,
@@ -175,6 +226,8 @@ def update(id):
         qty = request.form.get("qty", "").strip()
         cost = request.form.get("cost", "").strip()
         place_raw = request.form.get("place_id", "").strip()
+        sublocation = request.form.get("sublocation", "").strip()
+        tags_raw = request.form.get("tags", "")
         error = None
 
         if not name:
@@ -229,6 +282,8 @@ def update(id):
             item_obj.qty = int(qty)
             item_obj.cost = float(cost) if cost else None
             item_obj.place_id = place_id
+            item_obj.sublocation = sublocation if sublocation else None
+            item_obj.tags = tags_for_input(tags_raw)
 
             if new_filename is not None:
                 item_obj.photo = new_filename

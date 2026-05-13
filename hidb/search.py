@@ -1,6 +1,7 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, render_template, request
 
-from hidb.models import db, Item
+from hidb.items import item_location_path, tag_list
+from hidb.models import Item, Tag
 from hidb.places import descendant_place_ids, get_place_options, place_paths_for_ids
 
 bp = Blueprint("search", __name__)
@@ -17,6 +18,8 @@ def run_search():
     do_search_name = request.form.get("search_name")
     do_search_serial_no = request.form.get("search_serial_no")
     do_search_description = request.form.get("search_description")
+    do_search_sublocation = request.form.get("search_sublocation")
+    do_search_tags = request.form.get("search_tags")
     do_search_places = request.form.get("search_places")
     include_subtree = request.form.get("search_place_subtree")
 
@@ -36,6 +39,18 @@ def run_search():
     if do_search_description == "search_description":
         search_term = request.form["description"]
         query = query.filter(Item.description.like(f"%{search_term}%"))
+        valid_query = True
+    if do_search_sublocation == "search_sublocation":
+        search_term = request.form["sublocation"]
+        query = query.filter(Item.sublocation.like(f"%{search_term}%"))
+        valid_query = True
+    if do_search_tags == "search_tags":
+        search_term = request.form["tags"].strip().lower()
+        query = (
+            query.join(Item.tags)
+            .filter(Tag.name.ilike(f"%{search_term}%"))
+            .distinct()
+        )
         valid_query = True
     if do_search_places == "search_places":
         raw_ids = request.form.getlist("places")
@@ -67,7 +82,13 @@ def run_search():
                     "cost": r.cost,
                     "date_added": r.date_added,
                     "photo": r.photo,
+                    "sublocation": r.sublocation,
+                    "tags": sorted(t.name for t in r.tags),
+                    "tag_list": tag_list(r.tags),
                     "place_path": paths.get(r.place_id, ""),
+                    "location_path": item_location_path(
+                        paths.get(r.place_id, ""), r.sublocation
+                    ),
                 }
                 for r in rows
             ]

@@ -50,6 +50,26 @@
       </tr>
       <tr>
         <td>
+          <label for="sublocation">Sublocation:</label>
+        </td>
+        <td>
+          <input name="sublocation" id="sublocation" value="{{ request.form.get('sublocation', item['sublocation'] or '') }}">
+          <br />
+          <span class="text-muted small">Optional detail inside the selected place, such as "on top of the dongle".</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="tags">Tags:</label>
+        </td>
+        <td>
+          <input name="tags" id="tags" value="{{ request.form.get('tags', item['tag_list']) }}">
+          <br />
+          <span class="text-muted small">Optional comma-separated tags, such as "snowboard, winter gear".</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
           <label for="photo">Update Photo?</label>
         </td>
         <td>
