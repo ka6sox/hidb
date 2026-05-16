@@ -34,6 +34,10 @@ VALID_ROLES = {ROLE_OWNER, ROLE_CO_OWNER, ROLE_EDITOR, ROLE_READER}
 CSRF_SESSION_KEY = "_csrf_token"
 PASSWORD_STAMP_SESSION_KEY = "password_updated_at"
 LOGIN_ERROR = "Incorrect username or password."
+THEME_DARK = "dark"
+THEME_LIGHT = "light"
+VALID_THEMES = {THEME_DARK, THEME_LIGHT}
+DEFAULT_PREFERENCES = {"theme": THEME_DARK}
 
 
 def csrf_token():
@@ -193,6 +197,28 @@ def owner_sponsor_options():
     )
 
 
+def get_user_preference(user: User | None, key: str, default=None):
+    if user is None:
+        return default
+    prefs = user.preferences or {}
+    return prefs.get(key, default)
+
+
+def set_user_preference(user: User, key: str, value) -> None:
+    prefs = dict(user.preferences or DEFAULT_PREFERENCES.copy())
+    prefs[key] = value
+    user.preferences = prefs
+    db.session.commit()
+
+
+def user_theme(user: User | None) -> str | None:
+    """Return stored theme for logged-in users, or None for guests (OS decides)."""
+    if user is None:
+        return None
+    theme = get_user_preference(user, "theme", THEME_DARK)
+    return theme if theme in VALID_THEMES else THEME_DARK
+
+
 def register_user(username: str, password: str) -> tuple[User | None, str | None]:
     role = ROLE_OWNER if User.query.count() == 0 else ROLE_READER
 
@@ -203,6 +229,7 @@ def register_user(username: str, password: str) -> tuple[User | None, str | None
             role=role,
             is_active=True,
             password_updated_at=datetime.utcnow(),
+            preferences=dict(DEFAULT_PREFERENCES),
         )
         db.session.add(user)
         db.session.commit()
@@ -222,6 +249,7 @@ def register_user(username: str, password: str) -> tuple[User | None, str | None
                 role=ROLE_READER,
                 is_active=True,
                 password_updated_at=datetime.utcnow(),
+                preferences=dict(DEFAULT_PREFERENCES),
             )
             db.session.add(user)
             db.session.commit()
@@ -297,6 +325,7 @@ def create_user_by_admin(
         password_updated_at=datetime.utcnow(),
         role_updated_at=datetime.utcnow(),
         role_updated_by_id=actor.id,
+        preferences=dict(DEFAULT_PREFERENCES),
     )
     try:
         db.session.add(user)
@@ -384,6 +413,7 @@ def auth_template_helpers():
         "can_view_place": can_view_place,
         "can_manage_users": can_manage_users,
         "role_label": role_label,
+        "theme": user_theme(getattr(g, "user", None)),
     }
 
 
@@ -435,6 +465,26 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("items.index"))
+
+
+@bp.route("/preferences", methods=("POST",))
+def update_preferences():
+    if g.user is None:
+        return redirect(url_for("auth.login"))
+
+    theme = request.form.get("theme", "").strip()
+    if theme not in VALID_THEMES:
+        if request.headers.get("Accept") == "application/json":
+            abort(400, "Invalid theme.")
+        flash("Invalid theme preference.")
+        return redirect(request.referrer or url_for("items.index"))
+
+    set_user_preference(g.user, "theme", theme)
+
+    if request.headers.get("Accept") == "application/json":
+        return ("", 204)
+
+    return redirect(request.referrer or url_for("items.index"))
 
 
 @bp.route("/users")

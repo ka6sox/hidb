@@ -9,6 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    JSON,
     String,
     Text,
     UniqueConstraint,
@@ -64,6 +65,7 @@ class User(db.Model):
     password_updated_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime, nullable=True
     )
+    preferences: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 
     places: Mapped[List["Place"]] = relationship(
         back_populates="creator", cascade="all, delete-orphan"

@@ -42,12 +42,12 @@
                 <option value="{{ sponsor.id }}" {% if user.editor_for_id == sponsor.id %}selected{% endif %}>{{ sponsor.username }}</option>
                 {% endfor %}
               </select>
-              <button type="submit" class="btn btn-sm btn-outline-light">Update role</button>
+              <button type="submit" class="btn btn-sm btn-theme-outline">Update role</button>
             </form>
             {% endif %}
             {% if g.user.role == 'owner' %}
             <div class="d-flex flex-wrap gap-2">
-              <a href="{{ url_for('auth.reset_user_password', user_id=user.id) }}" class="action btn btn-sm btn-outline-light">Reset password</a>
+              <a href="{{ url_for('auth.reset_user_password', user_id=user.id) }}" class="action btn btn-sm btn-theme-outline">Reset password</a>
               {% if user.id != original_owner_id %}
               <form method="post" action="{{ url_for('auth.update_user_active', user_id=user.id) }}" class="d-inline">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">

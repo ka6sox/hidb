@@ -31,7 +31,7 @@
           <td class="align-middle small">{{ r.tag_list }}</td>
           <td class="align-middle">
             {% if can_edit_item(g.user, r) %}
-            <a href="{{ url_for('items.update', id=r['id']) }}" class="btn btn-sm btn-outline-light">Edit</a>
+            <a href="{{ url_for('items.update', id=r['id']) }}" class="btn btn-sm btn-theme-outline">Edit</a>
             {% endif %}
             {% if can_delete_item(g.user, r) %}
             <form method="post" action="{{ url_for('items.delete', id=r['id']) }}" class="d-inline" onsubmit="return confirm('Are you sure?');">
@@ -57,7 +57,7 @@
     {% if include_subtree %}
     <input type="hidden" name="search_place_subtree" value="search_place_subtree">
     {% endif %}
-    <button type="submit" class="btn btn-outline-light btn-sm">Search again</button>
+    <button type="submit" class="btn btn-theme-outline btn-sm">Search again</button>
   </form>
   <a href="{{ url_for('search.index', q=q) }}" class="btn btn-link btn-sm">New search</a>
 </div>

@@ -30,6 +30,7 @@ def app():
                 password=generate_password_hash("test"),
                 role="owner",
                 password_updated_at=datetime.utcnow(),
+                preferences={"theme": "dark"},
             ),
         )
         db.session.add(
@@ -38,6 +39,7 @@ def app():
                 password=generate_password_hash("other"),
                 role="co_owner",
                 password_updated_at=datetime.utcnow(),
+                preferences={"theme": "dark"},
             ),
         )
         db.session.commit()

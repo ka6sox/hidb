@@ -3,6 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      var theme = {{ theme|tojson }};
+      if (theme === "dark" || theme === "light") {
+        document.documentElement.dataset.theme = theme;
+      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.documentElement.dataset.theme = "dark";
+      } else {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   <title>{% block title %}{% endblock %} - Home Inventory Database</title>
@@ -10,7 +22,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+  <nav class="navbar navbar-expand-lg mb-4">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('items.index') }}">
         <img src="{{ url_for('static', filename='hidb-icon-128.png') }}" alt="" class="navbar-brand-icon" width="36" height="36" decoding="async">
@@ -30,12 +42,19 @@
           <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.users') }}">Users</a></li>
           {% endif %}
         </ul>
-        <div class="navbar-text d-flex align-items-center gap-3 flex-wrap">
+        <div class="navbar-text d-flex align-items-center gap-2 flex-wrap">
+          <button type="button" id="theme-toggle" class="btn btn-theme-outline btn-sm theme-toggle-btn"
+            aria-label="Toggle light/dark theme"
+            data-preferences-url="{{ url_for('auth.update_preferences') }}"
+            title="Toggle theme">
+            <span class="theme-icon-sun" {% if theme != 'dark' %}hidden{% endif %} aria-hidden="true">&#9728;</span>
+            <span class="theme-icon-moon" {% if theme == 'dark' %}hidden{% endif %} aria-hidden="true">&#9789;</span>
+          </button>
           <span class="text-muted small">{{ g.user.username }} · {{ role_label(g.user.role) }}</span>
           <a href="{{ url_for('auth.change_password') }}" class="action small">Password</a>
           <form method="post" action="{{ url_for('auth.logout') }}" class="d-inline">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-light btn-sm">Log out</button>
+            <button type="submit" class="btn btn-theme-outline btn-sm">Log out</button>
           </form>
         </div>
         {% else %}
@@ -56,7 +75,7 @@
     {% for message in messages %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
       {{ message }}
-      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
     {% endif %}
