@@ -27,8 +27,16 @@
     <td>{{ r.location_path }}</td>
     <td>{{ r.tag_list }}</td>
       {% if g.user %}
-      <td><a href="{{ url_for('items.update', id=r['id']) }}">Edit</a>&nbsp;&nbsp;
-        <a href="{{ url_for('items.delete', id=r['id']) }}" onclick="return confirm('Are you sure?');">Delete</a>
+      <td>
+        {% if can_edit_item(g.user, r) %}
+        <a href="{{ url_for('items.update', id=r['id']) }}">Edit</a>&nbsp;&nbsp;
+        {% endif %}
+        {% if can_delete_item(g.user, r) %}
+        <form method="post" action="{{ url_for('items.delete', id=r['id']) }}" class="d-inline" onsubmit="return confirm('Are you sure?');">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-link p-0 align-baseline">Delete</button>
+        </form>
+        {% endif %}
       </td>
       {% endif %}
 

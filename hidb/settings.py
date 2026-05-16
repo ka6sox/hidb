@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -37,6 +38,29 @@ def get_sqlalchemy_database_uri(instance_path: str) -> str:
     if raw:
         return normalize_database_url(raw)
     return "sqlite:///" + os.path.join(instance_path, "hidb.sqlite")
+
+
+def get_secret_key(instance_path: str) -> str:
+    """
+    Resolve the Flask session signing key.
+
+    Deployments can set SECRET_KEY explicitly. Local/self-hosted installs get a
+    generated key stored under the Flask instance folder so old cookies from a
+    different install cannot be reused.
+    """
+    env_secret = os.getenv("SECRET_KEY")
+    if env_secret:
+        return env_secret
+
+    os.makedirs(instance_path, exist_ok=True)
+    secret_path = Path(instance_path) / "secret_key"
+    if secret_path.exists():
+        return secret_path.read_text(encoding="utf-8").strip()
+
+    generated = secrets.token_urlsafe(32)
+    secret_path.write_text(generated, encoding="utf-8")
+    secret_path.chmod(0o600)
+    return generated
 
 
 config = SimpleNamespace(

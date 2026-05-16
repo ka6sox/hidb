@@ -1,5 +1,6 @@
 import os
 import tempfile
+from datetime import datetime
 
 import pytest
 from werkzeug.security import generate_password_hash
@@ -15,6 +16,8 @@ def app():
         {
             "TESTING": True,
             "SQLALCHEMY_DATABASE_URI": f"sqlite:///{db_path}",
+            "CSRF_ENABLED": False,
+            "SESSION_COOKIE_SECURE": False,
         }
     )
     with app.app_context():
@@ -22,10 +25,20 @@ def app():
 
         upgrade()
         db.session.add(
-            User(username="test", password=generate_password_hash("test")),
+            User(
+                username="test",
+                password=generate_password_hash("test"),
+                role="owner",
+                password_updated_at=datetime.utcnow(),
+            ),
         )
         db.session.add(
-            User(username="other", password=generate_password_hash("other")),
+            User(
+                username="other",
+                password=generate_password_hash("other"),
+                role="co_owner",
+                password_updated_at=datetime.utcnow(),
+            ),
         )
         db.session.commit()
 
@@ -56,7 +69,7 @@ class AuthActions:
         )
 
     def logout(self):
-        return self._client.get("/auth/logout")
+        return self._client.post("/auth/logout")
 
 
 @pytest.fixture

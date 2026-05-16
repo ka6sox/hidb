@@ -1,16 +1,57 @@
 import pytest
 from flask import g, session
+from werkzeug.security import generate_password_hash
 
-from hidb.models import User
+from hidb import create_app
+from hidb.models import db, User
+
+
+def make_isolated_app(tmp_path, csrf_enabled=False):
+    app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{tmp_path / 'test.sqlite'}",
+            "CSRF_ENABLED": csrf_enabled,
+            "SESSION_COOKIE_SECURE": False,
+        }
+    )
+    with app.app_context():
+        from flask_migrate import upgrade
+
+        upgrade()
+    return app
 
 
 def test_register(client, app):
     assert client.get("/auth/register").status_code == 200
-    response = client.post("/auth/register", data={"username": "a", "password": "a"})
+    response = client.post(
+        "/auth/register",
+        data={"username": "newuser", "password": "password123"},
+    )
     assert response.headers["Location"].endswith("/auth/login")
 
     with app.app_context():
-        assert User.query.filter_by(username="a").first() is not None
+        user = User.query.filter_by(username="newuser").first()
+        assert user is not None
+        assert user.role == "reader"
+
+
+def test_first_registered_user_becomes_owner(tmp_path):
+    app = make_isolated_app(tmp_path)
+    client = app.test_client()
+
+    client.post(
+        "/auth/register",
+        data={"username": "first", "password": "password123"},
+    )
+    client.post(
+        "/auth/register",
+        data={"username": "second", "password": "password123"},
+    )
+
+    with app.app_context():
+        assert User.query.filter_by(username="first").one().role == "owner"
+        assert User.query.filter_by(username="second").one().role == "reader"
 
 
 @pytest.mark.parametrize(
@@ -18,7 +59,8 @@ def test_register(client, app):
     (
         ("", "", b"Username is required."),
         ("a", "", b"Password is required."),
-        ("test", "test", b"already registered"),
+        ("a", "short", b"at least 8 characters"),
+        ("test", "password123", b"already registered"),
     ),
 )
 def test_register_validate_input(client, username, password, message):
@@ -43,8 +85,8 @@ def test_login(client, auth):
 @pytest.mark.parametrize(
     ("username", "password", "message"),
     (
-        ("a", "test", b"Incorrect username."),
-        ("test", "a", b"Incorrect password."),
+        ("a", "test", b"Incorrect username or password."),
+        ("test", "a", b"Incorrect username or password."),
     ),
 )
 def test_login_validate_input(auth, username, password, message):
@@ -58,3 +100,79 @@ def test_logout(client, auth):
     with client:
         auth.logout()
         assert "user_id" not in session
+
+
+def test_logout_get_not_allowed(client, auth):
+    auth.login()
+    assert client.get("/auth/logout").status_code == 405
+
+
+def test_inactive_user_cannot_login(client, app):
+    with app.app_context():
+        user = User.query.filter_by(username="other").one()
+        user.is_active = False
+        db.session.commit()
+
+    response = client.post(
+        "/auth/login",
+        data={"username": "other", "password": "other"},
+    )
+    assert b"Incorrect username or password." in response.data
+
+
+def test_owner_can_reset_password(client, auth):
+    auth.login()
+    response = client.post(
+        "/auth/users/2/password",
+        data={
+            "password": "newpassword",
+            "confirm_password": "newpassword",
+        },
+    )
+    assert response.headers["Location"].endswith("/auth/users")
+
+    auth.logout()
+    response = auth.login("other", "newpassword")
+    assert response.headers["Location"] in ("/", "/items")
+
+
+def test_non_owner_cannot_reset_password(client, auth):
+    auth.login("other", "other")
+    response = client.post(
+        "/auth/users/1/password",
+        data={
+            "password": "newpassword",
+            "confirm_password": "newpassword",
+        },
+    )
+    assert response.status_code == 403
+
+
+def test_csrf_rejects_missing_token(tmp_path):
+    app = make_isolated_app(tmp_path, csrf_enabled=True)
+    client = app.test_client()
+
+    response = client.post(
+        "/auth/register",
+        data={"username": "first", "password": "password123"},
+    )
+
+    assert response.status_code == 400
+
+
+def test_csrf_accepts_valid_token(tmp_path):
+    app = make_isolated_app(tmp_path, csrf_enabled=True)
+    client = app.test_client()
+
+    with client.session_transaction() as sess:
+        sess["_csrf_token"] = "known-token"
+    response = client.post(
+        "/auth/register",
+        data={
+            "_csrf_token": "known-token",
+            "username": "first",
+            "password": "password123",
+        },
+    )
+
+    assert response.headers["Location"].endswith("/auth/login")

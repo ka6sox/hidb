@@ -2,7 +2,18 @@ from datetime import datetime
 from typing import List, Optional
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
@@ -26,16 +37,52 @@ item_tags = db.Table(
 
 class User(db.Model):
     __tablename__ = "users"
+    __table_args__ = (
+        Index(
+            "uq_users_single_owner",
+            "role",
+            unique=True,
+            sqlite_where=text("role = 'owner'"),
+            postgresql_where=text("role = 'owner'"),
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String, nullable=False)
+    role: Mapped[str] = mapped_column(String(32), nullable=False, default="reader")
+    editor_for_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=True, index=True
+    )
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    role_updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True
+    )
+    role_updated_by_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=True
+    )
+    password_updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True
+    )
 
     places: Mapped[List["Place"]] = relationship(
         back_populates="creator", cascade="all, delete-orphan"
     )
     items: Mapped[List["Item"]] = relationship(
         back_populates="creator", cascade="all, delete-orphan"
+    )
+    editor_for: Mapped[Optional["User"]] = relationship(
+        remote_side="User.id",
+        foreign_keys=[editor_for_id],
+        back_populates="editors",
+    )
+    editors: Mapped[List["User"]] = relationship(
+        foreign_keys=[editor_for_id],
+        back_populates="editor_for",
+    )
+    role_updated_by: Mapped[Optional["User"]] = relationship(
+        remote_side="User.id",
+        foreign_keys=[role_updated_by_id],
     )
 
     def __repr__(self) -> str:
@@ -62,6 +109,7 @@ class Place(db.Model):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_private: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     creator: Mapped["User"] = relationship(back_populates="places")
     parent: Mapped[Optional["Place"]] = relationship(

@@ -1,7 +1,6 @@
 def test_index_guest(client):
     response = client.get("/")
-    assert b"Log In" in response.data
-    assert b"Register" in response.data
+    assert response.headers["Location"].endswith("/auth/login")
 
 
 def test_index_logged_in(client, auth):

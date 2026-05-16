@@ -1,19 +1,27 @@
 from flask import Blueprint, flash, render_template, request
 
+from hidb.auth import login_required
 from hidb.items import item_location_path, tag_list
 from hidb.models import Item, Tag
-from hidb.places import descendant_place_ids, get_place_options, place_paths_for_ids
+from hidb.places import (
+    descendant_place_ids,
+    get_place_options,
+    place_paths_for_ids,
+    visible_place_ids,
+)
 
 bp = Blueprint("search", __name__)
 
 
 @bp.route("/search")
+@login_required
 def index():
     places_opts = get_place_options()
     return render_template("search/index.html.j2", places=places_opts)
 
 
 @bp.route("/search/run_search", methods=("POST",))
+@login_required
 def run_search():
     do_search_name = request.form.get("search_name")
     do_search_serial_no = request.form.get("search_serial_no")
@@ -57,9 +65,20 @@ def run_search():
         if not raw_ids:
             flash("Select at least one place when filtering by place.")
             return render_template("search/index.html.j2", places=places_opts)
-        place_ids = [int(p) for p in raw_ids]
+        try:
+            place_ids = [int(p) for p in raw_ids]
+        except ValueError:
+            flash("Invalid place selection.")
+            return render_template("search/index.html.j2", places=places_opts)
+        allowed = visible_place_ids()
+        place_ids = [pid for pid in place_ids if pid in allowed]
+        if not place_ids:
+            flash("You cannot search using places you cannot access.")
+            return render_template("search/index.html.j2", places=places_opts)
         if include_subtree == "search_place_subtree":
-            place_ids = descendant_place_ids(place_ids)
+            place_ids = [
+                pid for pid in descendant_place_ids(place_ids) if pid in allowed
+            ]
         query = query.filter(Item.place_id.in_(place_ids))
         valid_query = True
 
@@ -81,6 +100,7 @@ def run_search():
                     "qty": r.qty,
                     "cost": r.cost,
                     "date_added": r.date_added,
+                    "creator_id": r.creator_id,
                     "photo": r.photo,
                     "sublocation": r.sublocation,
                     "tags": sorted(t.name for t in r.tags),

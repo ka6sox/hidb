@@ -6,14 +6,16 @@
 
 {% block content %}
 {% if g.user %}
+{% if can_create_place(g.user) %}
 <p><a href="{{ url_for('places.create') }}">Add a place</a></p>
+{% endif %}
 
 <table class="table table-borderless table-dark">
   <thead>
     <tr class="table-primary">
       <th>Path</th>
       <th>Items here</th>
-      {% if g.user %}
+      {% if can_create_place(g.user) %}
       <th>Actions</th>
       {% endif %}
     </tr>
@@ -21,9 +23,9 @@
   <tbody>
     {% for place in places %}
     <tr>
-      <td>{{ place.path }}</td>
+      <td>{{ place.path }}{% if place.is_private %} <span class="text-muted small">(private)</span>{% endif %}</td>
       <td>{{ place.item_count }}</td>
-      {% if g.user %}
+      {% if can_manage_place(g.user, place) %}
       <td>
         <a class="action" href="{{ url_for('places.update', id=place['id']) }}">Edit</a>&nbsp;&nbsp;&nbsp;
         <a class="action" href="{{ url_for('places.delete', id=place['id']) }}">Delete</a>

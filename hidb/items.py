@@ -13,7 +13,15 @@ from flask import (
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 
-from hidb.auth import login_required
+from hidb.auth import (
+    can_create_item,
+    can_delete_item,
+    can_edit_item,
+    can_use_place_for_item,
+    item_owner_id_for,
+    login_required,
+
+)
 from hidb.models import db, Item, Place, Tag
 from hidb.places import get_place_options, place_path, place_paths_for_ids
 
@@ -22,6 +30,7 @@ bp = Blueprint("items", __name__)
 
 @bp.route("/")
 @bp.route("/items")
+@login_required
 def index():
     items = get_items()
     places_opts = get_place_options()
@@ -88,6 +97,7 @@ def get_items(limit=None):
             "qty": r.qty,
             "cost": r.cost,
             "date_added": r.date_added,
+            "creator_id": r.creator_id,
             "sublocation": r.sublocation,
             "tags": sorted(t.name for t in r.tags),
             "tag_list": tag_list(r.tags),
@@ -111,6 +121,10 @@ def allowed_file_type(filename):
 @bp.route("/items/create", methods=("GET", "POST"))
 @login_required
 def create():
+    if not can_create_item(g.user):
+        abort(403)
+
+    owner_id = item_owner_id_for(g.user)
     places_opts = get_place_options()
 
     if request.method == "POST":
@@ -142,12 +156,15 @@ def create():
                 error = "Invalid place."
 
         if error is None and place_id is not None:
-            if Place.query.get(place_id) is None:
+            place = Place.query.get(place_id)
+            if place is None:
                 error = "Place does not exist."
+            elif not can_use_place_for_item(g.user, place):
+                error = "You cannot use another user's place."
 
-        photo = request.files["photo"]
+        photo = request.files.get("photo")
         filename = ""
-        if photo.filename == "":
+        if photo is None or photo.filename == "":
             filename = ""
         else:
             if not allowed_file_type(photo.filename):
@@ -174,7 +191,7 @@ def create():
                 place_id=place_id,
                 sublocation=sublocation if sublocation else None,
                 photo=filename if filename else None,
-                creator_id=g.user.id,
+                creator_id=owner_id,
             )
             item.tags = tags_for_input(tags_raw)
             db.session.add(item)
@@ -190,7 +207,7 @@ def get_item(id, check_author=True):
     if item is None:
         abort(404, f"Item id {id} doesn't exist.")
 
-    if check_author and g.user is not None and item.creator_id != g.user.id:
+    if check_author and not can_edit_item(g.user, item):
         abort(403)
 
     path = place_path(item.place_id)
@@ -217,6 +234,7 @@ def get_item(id, check_author=True):
 @login_required
 def update(id):
     item = get_item(id)
+    owner_id = item_owner_id_for(g.user)
     places_opts = get_place_options()
 
     if request.method == "POST":
@@ -247,8 +265,11 @@ def update(id):
                 error = "Invalid place."
 
         if error is None and place_id is not None:
-            if Place.query.get(place_id) is None:
+            place = Place.query.get(place_id)
+            if place is None:
                 error = "Place does not exist."
+            elif not can_use_place_for_item(g.user, place):
+                error = "You cannot use another user's place."
 
         old_filename = None
         new_filename = None
@@ -303,15 +324,19 @@ def update(id):
 
 
 @bp.route("/items/<int:id>/details", methods=("GET",))
+@login_required
 def details(id):
     item = get_item(id, check_author=False)
     return render_template("items/details.html.j2", item=item)
 
 
-@bp.route("/items/<int:id>/delete", methods=("GET", "POST"))
+@bp.route("/items/<int:id>/delete", methods=("POST",))
 @login_required
 def delete(id):
-    i = get_item(id)
+    i = get_item(id, check_author=False)
+    if not can_delete_item(g.user, i):
+        abort(403)
+
     item_obj = Item.query.get(id)
 
     if i["photo"]:
