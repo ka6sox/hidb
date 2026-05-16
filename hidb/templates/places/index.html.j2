@@ -30,7 +30,7 @@
           <td>{{ place.item_count }}</td>
           {% if can_manage_place(g.user, place) %}
           <td>
-            <a class="action btn btn-sm btn-outline-light" href="{{ url_for('places.update', id=place['id']) }}">Edit</a>
+            <a class="action btn btn-sm btn-theme-outline" href="{{ url_for('places.update', id=place['id']) }}">Edit</a>
             <a class="action btn btn-sm btn-outline-danger" href="{{ url_for('places.delete', id=place['id']) }}">Delete</a>
           </td>
           {% endif %}

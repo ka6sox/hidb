@@ -58,7 +58,7 @@
           <td class="align-middle small">{{ item.tag_list }}</td>
           <td class="align-middle">
             {% if can_edit_item(g.user, item) %}
-            <a href="{{ url_for('items.update', id=item['id']) }}" class="action btn btn-sm btn-outline-light">Edit</a>
+            <a href="{{ url_for('items.update', id=item['id']) }}" class="action btn btn-sm btn-theme-outline">Edit</a>
             {% endif %}
             {% if can_delete_item(g.user, item) %}
             <form method="post" action="{{ url_for('items.delete', id=item['id']) }}" class="d-inline" onsubmit="return confirm('Are you sure?');">

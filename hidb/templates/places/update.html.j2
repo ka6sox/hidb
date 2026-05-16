@@ -26,7 +26,7 @@
   </div>
   <div class="card-footer d-flex gap-2 flex-wrap">
     <button type="submit" class="btn btn-primary">Save</button>
-    <a href="{{ url_for('places.index') }}" class="btn btn-outline-light">Cancel</a>
+    <a href="{{ url_for('places.index') }}" class="btn btn-theme-outline">Cancel</a>
     <a class="action text-danger ms-auto align-self-center" href="{{ url_for('places.delete', id=place['id']) }}">Delete this place…</a>
   </div>
 </form>

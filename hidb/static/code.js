@@ -65,8 +65,53 @@ function bindPlaceCreateForm(modal, modalBody) {
   });
 }
 
+function currentTheme() {
+  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  var sun = document.querySelector(".theme-icon-sun");
+  var moon = document.querySelector(".theme-icon-moon");
+  if (sun) {
+    sun.hidden = theme !== "dark";
+  }
+  if (moon) {
+    moon.hidden = theme !== "light";
+  }
+}
+
+function bindThemeToggle() {
+  var toggle = document.getElementById("theme-toggle");
+  if (!toggle) {
+    return;
+  }
+
+  toggle.addEventListener("click", function() {
+    var next = currentTheme() === "dark" ? "light" : "dark";
+    applyTheme(next);
+
+    var url = toggle.getAttribute("data-preferences-url");
+    if (!url) {
+      return;
+    }
+
+    var data = new FormData();
+    data.append("theme", next);
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "X-CSRF-Token": csrfToken(),
+      },
+      body: data,
+    });
+  });
+}
+
 $(document).ready(function() {
   $("input.currency").currencyInput();
+  bindThemeToggle();
 
   var addPlaceLink = document.getElementById("add-place-link");
   var modalEl = document.getElementById("placeCreateModal");

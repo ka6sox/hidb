@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-theme="dark"] {
   --hidb-bg: #0f1419;
   --hidb-surface: #1a2332;
   --hidb-surface-elevated: #243044;
@@ -8,8 +9,42 @@
   --hidb-primary: #3d8bfd;
   --hidb-primary-hover: #5c9dff;
   --hidb-danger: #f07178;
+  --hidb-row-hover: rgba(61, 139, 253, 0.06);
+  --hidb-alert-danger-bg: rgba(240, 113, 120, 0.12);
+  --hidb-alert-danger-border: rgba(240, 113, 120, 0.35);
+  --hidb-alert-danger-text: #ffb4b8;
+  --hidb-alert-success-bg: rgba(76, 175, 130, 0.12);
+  --hidb-alert-success-border: rgba(76, 175, 130, 0.35);
+  --hidb-alert-success-text: #9fd4b8;
+  --hidb-btn-outline-color: #e8edf4;
+  --hidb-btn-outline-hover-bg: rgba(255, 255, 255, 0.08);
+  --hidb-navbar-toggler-filter: invert(1);
+  --hidb-btn-close-filter: invert(1) grayscale(100%);
   --hidb-radius: 0.5rem;
   --hidb-spacing: 1rem;
+}
+
+[data-theme="light"] {
+  --hidb-bg: #f4f6f9;
+  --hidb-surface: #ffffff;
+  --hidb-surface-elevated: #eef1f6;
+  --hidb-border: #d5dce6;
+  --hidb-text: #1a2332;
+  --hidb-text-muted: #5c6b82;
+  --hidb-primary: #2563eb;
+  --hidb-primary-hover: #1d4ed8;
+  --hidb-danger: #dc3545;
+  --hidb-row-hover: rgba(37, 99, 235, 0.06);
+  --hidb-alert-danger-bg: rgba(220, 53, 69, 0.1);
+  --hidb-alert-danger-border: rgba(220, 53, 69, 0.3);
+  --hidb-alert-danger-text: #842029;
+  --hidb-alert-success-bg: rgba(25, 135, 84, 0.1);
+  --hidb-alert-success-border: rgba(25, 135, 84, 0.3);
+  --hidb-alert-success-text: #0f5132;
+  --hidb-btn-outline-color: #1a2332;
+  --hidb-btn-outline-hover-bg: rgba(0, 0, 0, 0.05);
+  --hidb-navbar-toggler-filter: none;
+  --hidb-btn-close-filter: none;
 }
 
 body {
@@ -19,9 +54,26 @@ body {
   line-height: 1.5;
 }
 
+.text-muted {
+  color: var(--hidb-text-muted) !important;
+}
+
 .navbar {
   background-color: var(--hidb-surface) !important;
   border-bottom: 1px solid var(--hidb-border);
+}
+
+.navbar .navbar-toggler-icon {
+  filter: var(--hidb-navbar-toggler-filter);
+}
+
+.navbar-brand {
+  color: var(--hidb-text) !important;
+}
+
+.navbar-brand:hover,
+.navbar-brand:focus {
+  color: var(--hidb-text) !important;
 }
 
 .navbar-brand-icon {
@@ -55,12 +107,19 @@ body {
   background-color: var(--hidb-surface);
   border: 1px solid var(--hidb-border);
   border-radius: var(--hidb-radius);
+  color: var(--hidb-text);
 }
 
 .card-header {
   background-color: var(--hidb-surface-elevated);
   border-bottom: 1px solid var(--hidb-border);
   font-weight: 600;
+  color: var(--hidb-text);
+}
+
+.card-footer {
+  background-color: var(--hidb-surface-elevated);
+  border-top: 1px solid var(--hidb-border);
 }
 
 .table {
@@ -80,7 +139,7 @@ body {
 }
 
 .table tbody tr:hover {
-  background-color: rgba(61, 139, 253, 0.06);
+  background-color: var(--hidb-row-hover);
 }
 
 .form-control,
@@ -112,21 +171,37 @@ body {
   border-color: var(--hidb-primary-hover);
 }
 
+.btn-theme-outline {
+  color: var(--hidb-btn-outline-color);
+  border-color: var(--hidb-border);
+  background-color: transparent;
+}
+
+.btn-theme-outline:hover {
+  color: var(--hidb-btn-outline-color);
+  background-color: var(--hidb-btn-outline-hover-bg);
+  border-color: var(--hidb-border);
+}
+
 .alert {
   border-radius: var(--hidb-radius);
   border: 1px solid transparent;
 }
 
+.alert .btn-close {
+  filter: var(--hidb-btn-close-filter);
+}
+
 .alert-danger {
-  background-color: rgba(240, 113, 120, 0.12);
-  border-color: rgba(240, 113, 120, 0.35);
-  color: #ffb4b8;
+  background-color: var(--hidb-alert-danger-bg);
+  border-color: var(--hidb-alert-danger-border);
+  color: var(--hidb-alert-danger-text);
 }
 
 .alert-success {
-  background-color: rgba(76, 175, 130, 0.12);
-  border-color: rgba(76, 175, 130, 0.35);
-  color: #9fd4b8;
+  background-color: var(--hidb-alert-success-bg);
+  border-color: var(--hidb-alert-success-border);
+  color: var(--hidb-alert-success-text);
 }
 
 .item-thumb {
@@ -186,5 +261,23 @@ details > summary:hover {
 }
 
 .modal-content {
+  background-color: var(--hidb-surface);
+  color: var(--hidb-text);
   border: 1px solid var(--hidb-border);
+}
+
+.modal-header {
+  border-bottom-color: var(--hidb-border);
+}
+
+.modal-footer {
+  border-top-color: var(--hidb-border);
+}
+
+.modal-header .btn-close {
+  filter: var(--hidb-btn-close-filter);
+}
+
+.theme-toggle-btn {
+  min-width: 2.25rem;
 }
