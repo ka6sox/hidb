@@ -6,6 +6,7 @@
 
 {% block content %}
   <form method="post">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
   <table class="table table-borderless table-dark">
     <tr>
     <td><label for="username">Username:</label></td>

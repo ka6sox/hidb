@@ -1,5 +1,7 @@
 import click
 from flask import current_app
+from sqlalchemy import text
+
 from hidb.models import db
 
 
@@ -16,6 +18,8 @@ def init_db_command():
     from flask_migrate import upgrade
 
     db.drop_all()
+    db.session.execute(text("DROP TABLE IF EXISTS alembic_version"))
+    db.session.commit()
     upgrade()
     click.echo('Initialized the database.')
 

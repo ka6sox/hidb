@@ -8,6 +8,7 @@
 {% if places|length < 1 %} You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.
 {% else %}
   <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <table class="table table-borderless table-dark">
       <tr>
         <td><label for="name">Make/Model:</label></td>

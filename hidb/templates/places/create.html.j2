@@ -6,6 +6,7 @@
 
 {% block content %}
   <form method="post">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <table class="table table-borderless table-dark">
       <tr>
         <td><label for="parent_id">Inside (optional):</label></td>
@@ -26,6 +27,14 @@
       <tr>
         <td><label for="description">Notes (optional):</label></td>
         <td><textarea name="description" id="description" rows="3">{{ request.form.get('description', '') }}</textarea></td>
+      </tr>
+      <tr>
+        <td><label for="is_private">Private place:</label></td>
+        <td>
+          <input type="checkbox" name="is_private" id="is_private" value="1"
+            {% if request.form.get('is_private') == '1' %}checked{% endif %}>
+          <p class="small text-muted mb-0">Only you and users in your sponsorship line can see this place. Public places are visible to all logged-in users.</p>
+        </td>
       </tr>
     </table>
     <input type="submit" value="Save">

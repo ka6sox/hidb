@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 from .filters import format_currency
-from .settings import get_sqlalchemy_database_uri
+from .settings import get_secret_key, get_sqlalchemy_database_uri
 
 
 def create_app(test_config=None):
@@ -11,14 +11,26 @@ def create_app(test_config=None):
     app.jinja_env.filters['format_currency'] = format_currency
 
     db_uri = get_sqlalchemy_database_uri(app.instance_path)
+    secret_key = get_secret_key(app.instance_path)
+    cookie_secure = os.getenv("SESSION_COOKIE_SECURE", "").lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
     app.config.from_mapping(
-        SECRET_KEY='dev',
+        SECRET_KEY=secret_key,
         SQLALCHEMY_DATABASE_URI=db_uri,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         UPLOAD_FOLDER='hidb/static/photos',
         ALLOWED_EXTENSIONS={'png', 'jpg', 'jpeg', 'gif', 'heif', 'heic'},
-        MAX_CONTENT_LENGTH=(16 * 1024 * 1024)
+        MAX_CONTENT_LENGTH=(16 * 1024 * 1024),
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=cookie_secure,
+        CSRF_ENABLED=True,
+        MIN_PASSWORD_LENGTH=8,
      )
 
     if test_config is None:
