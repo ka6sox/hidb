@@ -15,6 +15,8 @@ This document captures the intended direction for making **photo storage** and *
 
 **Why:** one codebase can run on a laptop with disk storage or in production with durable, scalable object storage without rewriting views around upload mechanics.
 
+**Detail:** [OBJECT_STORAGE_PLAN.md](OBJECT_STORAGE_PLAN.md)
+
 ## Database (SQLite vs PostgreSQL and managed Postgres)
 
 **Today:** the app uses **SQLAlchemy** with a configurable **`DATABASE_URL`** (or `SQLALCHEMY_DATABASE_URI`). With no URL set, it defaults to **SQLite** under the Flask instance path; with a URL set, it targets **PostgreSQL** via the **psycopg** driver (including normalized `postgres://` URLs). Engine options differ slightly for SQLite vs server-backed databases (e.g. connection pooling behavior for Postgres).
