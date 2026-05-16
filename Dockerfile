@@ -5,21 +5,19 @@ FROM python:3.13.2-bookworm
 RUN mkdir /hidb
 WORKDIR /hidb
 
-# First, copy the requirements.txt only as it helps with caching
+# Copy requirements first for layer caching
 # Details: https://pythonspeed.com/articles/docker-caching-model/
-COPY ./requirements.txt /hidb
-RUN pip install -r requirements.txt
+COPY requirements.txt /hidb/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the source code
+# Copy the application
 COPY . /hidb
 
-# Turn of debugging in production
-ENV FLASK_DEBUG 0
+# Turn off debugging in production
+ENV FLASK_DEBUG=0
 
-# Set entrypoint
 ENV FLASK_APP=hidb
-ENV FLASK_RUN_HOST 0.0.0.0
-EXPOSE 4000
+ENV FLASK_RUN_HOST=0.0.0.0
+EXPOSE 5000
 
-# Run Flask command
 CMD ["gunicorn", "-b", "0.0.0.0:5000", "hidb.run:application"]

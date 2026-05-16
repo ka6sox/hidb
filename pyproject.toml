@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hidb"
+version = "0.2.0"
+description = "Home Inventory DataBase"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13"
+dependencies = [
+    "Flask>=3.0,<4",
+    "Flask-SQLAlchemy>=3.1,<4",
+    "Flask-Migrate>=4.0,<5",
+    "Werkzeug>=3.0,<4",
+    "psycopg[binary]>=3.2,<4",
+    "gunicorn>=22,<24",
+    "python-dotenv>=1,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+    "coverage>=7,<8",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hidb*"]
+
+[tool.setuptools.package-data]
+hidb = ["static/**", "templates/**"]
+
+[tool.setuptools.exclude-package-data]
+hidb = ["static/photos/*"]

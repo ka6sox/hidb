@@ -1,15 +1,7 @@
 import click
-from flask import current_app
 from sqlalchemy import text
 
 from hidb.models import db
-
-
-def init_db():
-    """Apply the latest migration (requires application context)."""
-    from flask_migrate import upgrade
-
-    upgrade()
 
 
 @click.command('init-db')

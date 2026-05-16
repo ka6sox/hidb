@@ -49,8 +49,9 @@ $ python --version
 $ python -m venv env
 $ source env/bin/activate
 
-# Install dependencies
-$ pip3 install -r requirements.txt
+# Install the app and dev dependencies (tests, coverage)
+$ pip install -e ".[dev]"
+# Or: pip install -r requirements-dev.txt
 ```
 
 ## Database backend (SQLite or PostgreSQL)
@@ -122,21 +123,29 @@ Use one of the [supported methods of deploying a Flask app](https://flask.pallet
 There are many options available, both commercial/third-party and self-hosted.
 
 ```shell
-# Build release package
-$ python setup.py bdist_wheel
+# Install build tooling (once)
+$ pip install build
+
+# Build a wheel under dist/
+$ python -m build
+
+# Install the wheel in a venv or on a host (runtime deps included)
+$ pip install dist/hidb-*.whl
 ```
 
 This repository also contains the configuration necessary to deploy this app in a [Docker](https://www.docker.com/)
-container, which is another viable option for hosting this app.
+container, which is the usual production path.
 
 ```shell
-# Build Docker container
-# Note: must re-run this command to incorporate changes
+# Build Docker image (re-run after code or dependency changes)
 $ docker compose build
 
-# Start up Docker container
+# Start container
 $ docker compose up
 
-# Shut down Docker container
+# Apply migrations after deploy or image update
+$ docker compose exec web flask db upgrade
+
+# Shut down
 $ docker compose down
 ```

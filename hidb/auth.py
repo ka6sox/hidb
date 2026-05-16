@@ -167,13 +167,6 @@ def can_use_place_for_item(actor: User | None, place) -> bool:
     return can_view_place(actor, place)
 
 
-def place_owner_filter_for_item(actor: User | None) -> int | None:
-    """Deprecated filter; visibility is handled per-place via can_view_place."""
-    if is_owner_or_co_owner(actor):
-        return None
-    return item_owner_id_for(actor)
-
-
 def can_edit_item(actor: User | None, item) -> bool:
     owner_id = item_owner_id_for(actor)
     return owner_id is not None and _get(item, "creator_id") == owner_id

@@ -1,14 +1,10 @@
+# Runtime dependencies (keep in sync with pyproject.toml [project.dependencies]).
+# Development: pip install -e ".[dev]"  or  pip install -r requirements-dev.txt
+
 Flask>=3.0,<4
 Flask-SQLAlchemy>=3.1,<4
 Flask-Migrate>=4.0,<5
 Werkzeug>=3.0,<4
-
-# PostgreSQL driver (RDS, Aurora, Docker Postgres, etc.); unused for default SQLite
 psycopg[binary]>=3.2,<4
-
 gunicorn>=22,<24
 python-dotenv>=1,<2
-
-pytest>=8,<9
-coverage>=7,<8
-wheel>=0.44,<1

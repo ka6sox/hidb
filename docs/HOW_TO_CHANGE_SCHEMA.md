@@ -60,4 +60,4 @@ Commit **both** the model changes and the new file under `migrations/versions/` 
 | 4 | `flask --app hidb db upgrade` |
 | 5 | Commit models + migration |
 
-For more context on the ORM migration history, see [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md). For command summaries, see [README.md](README.md#database-migrations-flask-migrate--alembic).
+For more context on the ORM migration history, see [archive/MIGRATION_GUIDE.md](archive/MIGRATION_GUIDE.md). For command summaries, see [README.md](README.md#database-migrations-flask-migrate--alembic).
