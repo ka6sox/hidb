@@ -1,71 +1,50 @@
 {% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header %}
 
-{% block header %}
-<h1>{% block title %}Find{% endblock %}</h1>
-{% endblock %}
+{% block title %}Find{% endblock %}
+{% block header %}{{ page_header('Find items') }}{% endblock %}
 
 {% block content %}
 {% if g.user %}
 {% if places|length < 1 %}
-<p>You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.</p>
+<div class="alert alert-danger">You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.</div>
 {% else %}
-  <form action="{{ url_for('search.run_search') }}" method="post">
-    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-
-    <table class="table table-borderless table-dark">
-      <tbody>
-        <tr>
-          <td><input type="checkbox" name="search_name" value="search_name">&nbsp;&nbsp;&nbsp;<label for="name">Name:</label></td>
-          <td><input name="name" autofocus id="name"></td>
-        </tr>
-
-        <tr>
-          <td><input type="checkbox" name="search_description" value="search_description">&nbsp;&nbsp;&nbsp;
-          <label for="description">Description:</label></td>
-          <td><input name="description" id="description"></td>
-        </tr>
-
-        <tr>
-          <td><input type="checkbox" name="search_sublocation" value="search_sublocation">&nbsp;&nbsp;&nbsp;
-          <label for="sublocation">Sublocation:</label></td>
-          <td><input name="sublocation" id="sublocation"></td>
-        </tr>
-
-        <tr>
-          <td><input type="checkbox" name="search_tags" value="search_tags">&nbsp;&nbsp;&nbsp;
-          <label for="tags">Tags:</label></td>
-          <td><input name="tags" id="tags"></td>
-        </tr>
-
-        <tr>
-          <td><input type="checkbox" name="search_places" value="search_places">&nbsp;&nbsp;&nbsp;
-          <label for="places">Place(s):</label></td>
-          <td>
-            <select name="places" id="places" multiple size="6">
-              {% for p in places %}
-              <option value="{{ p.id }}">{{ p.label }}</option>
-              {% endfor %}
-            </select>
-          </td>
-        </tr>
-
-        <tr>
-          <td><input type="checkbox" name="search_place_subtree" value="search_place_subtree">&nbsp;&nbsp;&nbsp;
-          <label for="search_place_subtree_hint">Include nested places</label></td>
-          <td><span class="text-muted small">When checked, matches items under selected places too (children in the tree).</span></td>
-        </tr>
-
-        <tr>
-          <td><input type="checkbox" name="search_serial_no" value="search_serial_no">&nbsp;&nbsp;&nbsp;
-          <label for="serial_no">Serial #:</label></td>
-          <td><input name="serial_no" id="serial_no"></td>
-        </tr>
-      </tbody>
-    </table>
-    <input class="submit" type="submit" value="Search">
-  </form>
+<div class="card">
+  <div class="card-body">
+    <form action="{{ url_for('search.run_search') }}" method="post">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label for="q" class="form-label">Search</label>
+        <div class="input-group">
+          <input type="search" name="q" id="q" class="form-control" autofocus
+            placeholder="Search name, description, tags, location…"
+            value="{{ q }}">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+        <div class="form-text">Partial matches across all fields. Multiple words match if any word matches.</div>
+      </div>
+      <details {% if selected_places or include_subtree %}open{% endif %}>
+        <summary class="mb-3">Optional filters</summary>
+        <div class="mb-3">
+          <label for="places" class="form-label">Place(s)</label>
+          <select name="places" id="places" class="form-select" multiple size="6">
+            {% for p in places %}
+            <option value="{{ p.id }}" {% if p.id in selected_places %}selected{% endif %}>{{ p.label }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-check mt-2">
+            <input type="checkbox" class="form-check-input" name="search_place_subtree" id="search_place_subtree"
+              value="search_place_subtree" {% if include_subtree %}checked{% endif %}>
+            <label class="form-check-label" for="search_place_subtree">Include nested places</label>
+          </div>
+          <div class="form-text">When checked, matches items under selected places too (children in the tree).</div>
+        </div>
+      </details>
+    </form>
+  </div>
+</div>
 {% endif %}
 {% else %}
-<p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
+<p>Please <a href="{{ url_for('auth.login') }}">log in</a> first.</p>
 {% endif %}
-  {% endblock %}
+{% endblock %}

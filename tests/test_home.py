@@ -6,5 +6,5 @@ def test_index_guest(client):
 def test_index_logged_in(client, auth):
     auth.login()
     response = client.get("/")
-    assert b"Log Out" in response.data
+    assert b"Log out" in response.data
     assert b"Items" in response.data or b"item" in response.data

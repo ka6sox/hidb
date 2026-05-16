@@ -1,69 +1,60 @@
 {% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header %}
 
-{% block header %}
-<h1>{% block title %}{{ item['name'] }}{% endblock %}</h1>
-{% endblock %}
+{% block title %}{{ item['name'] }}{% endblock %}
+{% block header %}{{ page_header(item.name) }}{% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-md-4">
-  <table class="table table-borderless table-dark">
-  <tbody>
-    {% if item['serial_no'] %}
-    <tr>
-    <td>Serial #:</td>
-    <td>{{ item['serial_no'] }}</td>
-    </tr>
-    {% endif %}
-    <tr>
-    <td>Quantity:</td>
-    <td>{{ item['qty'] }}</td>
-    </tr>
-    {% if item['cost'] is string and item['cost'] %}
-    <tr>
-    <td>Cost:</td>
-    <td>{{ item['cost']|format_currency }}</td>
-    </tr>
-    {% elif item['cost'] is float and item['cost'] > 0.0 %}
-    <tr>
-    <td>Cost:</td>
-    <td>{{ item['cost']|format_currency }}</td>
-    </tr>
-    {% endif %}
-    <tr>
-    <td>Location:</td>
-    <td>{{ item['location_path'] }}</td>
-    </tr>
-    {% if item['tag_list'] %}
-    <tr>
-    <td>Tags:</td>
-    <td>{{ item['tag_list'] }}</td>
-    </tr>
-    {% endif %}
-    <tr>
-    <td>Acquired:</td>
-    <td>{{ item['date_added'].strftime('%Y-%m-%d %H:%M') }}</td>
-    </tr>
-    </tbody>
-    </table>
-    <p class="body">{{ item['description'] }}</p>
-    {% if can_edit_item(g.user, item) or can_delete_item(g.user, item) %}
-    <p>
-    {% if can_edit_item(g.user, item) %}
-    <a href="{{ url_for('items.update', id=item['id']) }}">Edit this entry</a><br />
-    {% endif %}
-    {% if can_delete_item(g.user, item) %}
-    <form method="post" action="{{ url_for('items.delete', id=item['id']) }}" class="d-inline" onsubmit="return confirm('Are you sure?');">
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-link p-0 align-baseline">Delete this entry</button>
-    </form>
-    {% endif %}
-    </p>
-    {% endif %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-body">
+        <dl class="row mb-0">
+          {% if item['serial_no'] %}
+          <dt class="col-sm-4 text-muted">Serial #</dt>
+          <dd class="col-sm-8">{{ item['serial_no'] }}</dd>
+          {% endif %}
+          <dt class="col-sm-4 text-muted">Quantity</dt>
+          <dd class="col-sm-8">{{ item['qty'] }}</dd>
+          {% if item['cost'] is string and item['cost'] %}
+          <dt class="col-sm-4 text-muted">Cost</dt>
+          <dd class="col-sm-8">{{ item['cost']|format_currency }}</dd>
+          {% elif item['cost'] is float and item['cost'] > 0.0 %}
+          <dt class="col-sm-4 text-muted">Cost</dt>
+          <dd class="col-sm-8">{{ item['cost']|format_currency }}</dd>
+          {% endif %}
+          <dt class="col-sm-4 text-muted">Location</dt>
+          <dd class="col-sm-8">{{ item['location_path'] }}</dd>
+          {% if item['tag_list'] %}
+          <dt class="col-sm-4 text-muted">Tags</dt>
+          <dd class="col-sm-8">{{ item['tag_list'] }}</dd>
+          {% endif %}
+          <dt class="col-sm-4 text-muted">Acquired</dt>
+          <dd class="col-sm-8">{{ item['date_added'].strftime('%Y-%m-%d %H:%M') }}</dd>
+        </dl>
+        {% if item['description'] %}
+        <hr>
+        <p class="mb-0">{{ item['description'] }}</p>
+        {% endif %}
+      </div>
+      {% if can_edit_item(g.user, item) or can_delete_item(g.user, item) %}
+      <div class="card-footer d-flex gap-2">
+        {% if can_edit_item(g.user, item) %}
+        <a href="{{ url_for('items.update', id=item['id']) }}" class="btn btn-primary btn-sm">Edit</a>
+        {% endif %}
+        {% if can_delete_item(g.user, item) %}
+        <form method="post" action="{{ url_for('items.delete', id=item['id']) }}" class="d-inline" onsubmit="return confirm('Are you sure?');">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
-  <div class="col-md-8">
-    <img src="{% if item['photo'] %}{{ url_for('static', filename='photos/'+item['photo']) }}{% else %}{{ url_for('static', filename='no_image.png') }}{% endif %}" class="img-fluid">
   </div>
-
+  <div class="col-lg-7">
+    <img src="{% if item['photo'] %}{{ url_for('static', filename='photos/'+item['photo']) }}{% else %}{{ url_for('static', filename='no_image.png') }}{% endif %}"
+      alt="{{ item.name }}" class="img-fluid item-photo-lg w-100">
+  </div>
 </div>
 {% endblock %}

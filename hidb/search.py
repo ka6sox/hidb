@@ -1,11 +1,15 @@
+import re
+
 from flask import Blueprint, flash, render_template, request
+from sqlalchemy import exists, false, or_, select
 
 from hidb.auth import login_required
 from hidb.items import item_location_path, tag_list
-from hidb.models import Item, Tag
+from hidb.models import Item, Tag, item_tags
 from hidb.places import (
     descendant_place_ids,
     get_place_options,
+    place_ids_matching_path_term,
     place_paths_for_ids,
     visible_place_ids,
 )
@@ -13,110 +17,144 @@ from hidb.places import (
 bp = Blueprint("search", __name__)
 
 
+def parse_search_terms(q: str) -> list[str]:
+    return [t for t in re.split(r"\s+", q.strip()) if t]
+
+
+def term_filter(term: str, allowed: set[int]):
+    pattern = f"%{term}%"
+    place_ids = place_ids_matching_path_term(term)
+    tag_match = exists(
+        select(item_tags.c.item_id)
+        .join(Tag, Tag.id == item_tags.c.tag_id)
+        .where(
+            item_tags.c.item_id == Item.id,
+            Tag.name.ilike(pattern),
+        )
+    )
+    clauses = [
+        Item.name.ilike(pattern),
+        Item.serial_no.ilike(pattern),
+        Item.description.ilike(pattern),
+        Item.sublocation.ilike(pattern),
+        tag_match,
+    ]
+    if place_ids:
+        clauses.append(Item.place_id.in_(place_ids))
+    return or_(*clauses)
+
+
+def resolve_place_filter(raw_ids: list[str], include_subtree: bool) -> tuple[list[int] | None, str | None]:
+    if not raw_ids:
+        return None, "Select at least one place when filtering by place."
+    try:
+        place_ids = [int(p) for p in raw_ids]
+    except ValueError:
+        return None, "Invalid place selection."
+    allowed = visible_place_ids()
+    place_ids = [pid for pid in place_ids if pid in allowed]
+    if not place_ids:
+        return None, "You cannot search using places you cannot access."
+    if include_subtree:
+        place_ids = [pid for pid in descendant_place_ids(place_ids) if pid in allowed]
+    return place_ids, None
+
+
+def build_search_query(terms: list[str], place_ids: list[int] | None):
+    allowed = visible_place_ids()
+    if not allowed:
+        return Item.query.filter(false())
+
+    query = Item.query.filter(Item.place_id.in_(allowed))
+
+    if terms:
+        query = query.filter(or_(*[term_filter(term, allowed) for term in terms]))
+
+    if place_ids is not None:
+        query = query.filter(Item.place_id.in_(place_ids))
+
+    return query.distinct()
+
+
+def rows_to_results(rows):
+    paths = place_paths_for_ids([r.place_id for r in rows])
+    return [
+        {
+            "id": r.id,
+            "name": r.name,
+            "serial_no": r.serial_no,
+            "description": r.description,
+            "qty": r.qty,
+            "cost": r.cost,
+            "date_added": r.date_added,
+            "creator_id": r.creator_id,
+            "photo": r.photo,
+            "sublocation": r.sublocation,
+            "tags": sorted(t.name for t in r.tags),
+            "tag_list": tag_list(r.tags),
+            "place_path": paths.get(r.place_id, ""),
+            "location_path": item_location_path(
+                paths.get(r.place_id, ""), r.sublocation
+            ),
+        }
+        for r in rows
+    ]
+
+
+def search_form_context():
+    q = request.values.get("q", "")
+    selected_places = [int(p) for p in request.values.getlist("places") if p.isdigit()]
+    include_subtree = (
+        request.values.get("search_place_subtree") == "search_place_subtree"
+    )
+    return {
+        "places": get_place_options(),
+        "q": q,
+        "selected_places": selected_places,
+        "include_subtree": include_subtree,
+    }
+
+
 @bp.route("/search")
 @login_required
 def index():
-    places_opts = get_place_options()
-    return render_template("search/index.html.j2", places=places_opts)
+    return render_template("search/index.html.j2", **search_form_context())
 
 
 @bp.route("/search/run_search", methods=("POST",))
 @login_required
 def run_search():
-    do_search_name = request.form.get("search_name")
-    do_search_serial_no = request.form.get("search_serial_no")
-    do_search_description = request.form.get("search_description")
-    do_search_sublocation = request.form.get("search_sublocation")
-    do_search_tags = request.form.get("search_tags")
-    do_search_places = request.form.get("search_places")
-    include_subtree = request.form.get("search_place_subtree")
+    q = request.form.get("q", "")
+    terms = parse_search_terms(q)
+    raw_place_ids = request.form.getlist("places")
+    include_subtree = request.form.get("search_place_subtree") == "search_place_subtree"
 
-    places_opts = get_place_options()
+    ctx = search_form_context()
+    ctx["q"] = q
+    ctx["selected_places"] = [int(p) for p in raw_place_ids if p.isdigit()]
+    ctx["include_subtree"] = include_subtree
 
-    query = Item.query
-    valid_query = False
+    place_ids = None
+    if raw_place_ids:
+        place_ids, place_error = resolve_place_filter(raw_place_ids, include_subtree)
+        if place_error:
+            flash(place_error)
+            return render_template("search/index.html.j2", **ctx)
 
-    if do_search_name == "search_name":
-        search_term = request.form["name"]
-        query = query.filter(Item.name.like(f"%{search_term}%"))
-        valid_query = True
-    if do_search_serial_no == "search_serial_no":
-        search_term = request.form["serial_no"]
-        query = query.filter(Item.serial_no.like(f"%{search_term}%"))
-        valid_query = True
-    if do_search_description == "search_description":
-        search_term = request.form["description"]
-        query = query.filter(Item.description.like(f"%{search_term}%"))
-        valid_query = True
-    if do_search_sublocation == "search_sublocation":
-        search_term = request.form["sublocation"]
-        query = query.filter(Item.sublocation.like(f"%{search_term}%"))
-        valid_query = True
-    if do_search_tags == "search_tags":
-        search_term = request.form["tags"].strip().lower()
-        query = (
-            query.join(Item.tags)
-            .filter(Tag.name.ilike(f"%{search_term}%"))
-            .distinct()
-        )
-        valid_query = True
-    if do_search_places == "search_places":
-        raw_ids = request.form.getlist("places")
-        if not raw_ids:
-            flash("Select at least one place when filtering by place.")
-            return render_template("search/index.html.j2", places=places_opts)
-        try:
-            place_ids = [int(p) for p in raw_ids]
-        except ValueError:
-            flash("Invalid place selection.")
-            return render_template("search/index.html.j2", places=places_opts)
-        allowed = visible_place_ids()
-        place_ids = [pid for pid in place_ids if pid in allowed]
-        if not place_ids:
-            flash("You cannot search using places you cannot access.")
-            return render_template("search/index.html.j2", places=places_opts)
-        if include_subtree == "search_place_subtree":
-            place_ids = [
-                pid for pid in descendant_place_ids(place_ids) if pid in allowed
-            ]
-        query = query.filter(Item.place_id.in_(place_ids))
-        valid_query = True
+    if not terms and place_ids is None:
+        flash("Enter a search term or filter by place.")
+        return render_template("search/index.html.j2", **ctx)
 
-    error = None
-    results = None
+    rows = build_search_query(terms, place_ids).order_by(Item.date_added.desc()).all()
 
-    if valid_query:
-        rows = query.order_by(Item.date_added.desc()).all()
-        paths = place_paths_for_ids([r.place_id for r in rows])
-        if len(rows) == 0:
-            error = "No matching items were found."
-        else:
-            results = [
-                {
-                    "id": r.id,
-                    "name": r.name,
-                    "serial_no": r.serial_no,
-                    "description": r.description,
-                    "qty": r.qty,
-                    "cost": r.cost,
-                    "date_added": r.date_added,
-                    "creator_id": r.creator_id,
-                    "photo": r.photo,
-                    "sublocation": r.sublocation,
-                    "tags": sorted(t.name for t in r.tags),
-                    "tag_list": tag_list(r.tags),
-                    "place_path": paths.get(r.place_id, ""),
-                    "location_path": item_location_path(
-                        paths.get(r.place_id, ""), r.sublocation
-                    ),
-                }
-                for r in rows
-            ]
-    else:
-        error = "You must select at least one search criteria."
+    if len(rows) == 0:
+        flash("No matching items were found.")
+        return render_template("search/index.html.j2", **ctx)
 
-    if error is not None:
-        flash(error)
-        return render_template("search/index.html.j2", places=places_opts)
-
-    return render_template("search/results.html.j2", results=results)
+    return render_template(
+        "search/results.html.j2",
+        results=rows_to_results(rows),
+        q=q,
+        selected_places=ctx["selected_places"],
+        include_subtree=include_subtree,
+    )

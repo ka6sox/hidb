@@ -1,43 +1,16 @@
 {% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header %}
 
-{% block header %}
-  <h1>{% block title %}Add a place{% endblock %}</h1>
-{% endblock %}
+{% block title %}Add a place{% endblock %}
+{% block header %}{{ page_header('Add a place') }}{% endblock %}
 
 {% block content %}
-  <form method="post">
-    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-    <table class="table table-borderless table-dark">
-      <tr>
-        <td><label for="parent_id">Inside (optional):</label></td>
-        <td>
-          <select name="parent_id" id="parent_id">
-            <option value="">— Root (top level) —</option>
-            {% for p in parents %}
-            <option value="{{ p.id }}">{{ p.label }}</option>
-            {% endfor %}
-          </select>
-          <p class="small text-muted mb-0">Leave as root for a room or top-level area; pick a parent for shelves, boxes, etc.</p>
-        </td>
-      </tr>
-      <tr>
-        <td><label for="name">Name:</label></td>
-        <td><input name="name" id="name" autofocus required value="{{ request.form.get('name', '') }}"></td>
-      </tr>
-      <tr>
-        <td><label for="description">Notes (optional):</label></td>
-        <td><textarea name="description" id="description" rows="3">{{ request.form.get('description', '') }}</textarea></td>
-      </tr>
-      <tr>
-        <td><label for="is_private">Private place:</label></td>
-        <td>
-          <input type="checkbox" name="is_private" id="is_private" value="1"
-            {% if request.form.get('is_private') == '1' %}checked{% endif %}>
-          <p class="small text-muted mb-0">Only you and users in your sponsorship line can see this place. Public places are visible to all logged-in users.</p>
-        </td>
-      </tr>
-    </table>
-    <input type="submit" value="Save">
-  </form>
-  <p><a href="{{ url_for('places.index') }}">Cancel</a></p>
+<div class="card" style="max-width: 36rem;">
+  <div class="card-body">
+    {% include 'places/_form.html.j2' %}
+  </div>
+  <div class="card-footer">
+    <a href="{{ url_for('places.index') }}" class="btn btn-outline-light btn-sm">Cancel</a>
+  </div>
+</div>
 {% endblock %}

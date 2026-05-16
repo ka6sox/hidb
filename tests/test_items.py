@@ -38,14 +38,8 @@ def test_item_sublocation_display_and_search(client, auth, app):
     details = client.get(f"/items/{item_id}/details")
     assert b"Garage / Cabinet 1 / Shelf 2 (on top of the dongle)" in details.data
 
-    results = client.post(
-        "/search/run_search",
-        data={
-            "search_sublocation": "search_sublocation",
-            "sublocation": "dongle",
-        },
-    )
-    assert b"Found 1 result" in results.data
+    results = client.post("/search/run_search", data={"q": "dongle"})
+    assert b"Search results" in results.data
     assert b"Garage / Cabinet 1 / Shelf 2 (on top of the dongle)" in results.data
 
 
@@ -114,14 +108,8 @@ def test_item_tags_display_search_and_update(client, auth, app):
         assert [t.name for t in boots.tags] == ["snowboarding", "winter gear"]
         assert Tag.query.filter_by(name="snowboarding").one() is not None
 
-    results = client.post(
-        "/search/run_search",
-        data={
-            "search_tags": "search_tags",
-            "tags": "snowboard",
-        },
-    )
-    assert b"Found 2 results" in results.data
+    results = client.post("/search/run_search", data={"q": "snowboard"})
+    assert b"2 match" in results.data
     assert b"Snowboard Boots" in results.data
     assert b"Board Wax" in results.data
     assert b"Skis" not in results.data

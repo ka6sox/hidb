@@ -1,42 +1,46 @@
 {% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header %}
 
-{% block header %}
-<h1>{% block title %}Places{% endblock %}</h1>
-{% endblock %}
+{% block title %}Places{% endblock %}
+{% block header %}{{ page_header('Places') }}{% endblock %}
 
 {% block content %}
 {% if g.user %}
-{% if can_create_place(g.user) %}
-<p><a href="{{ url_for('places.create') }}">Add a place</a></p>
-{% endif %}
-
-<table class="table table-borderless table-dark">
-  <thead>
-    <tr class="table-primary">
-      <th>Path</th>
-      <th>Items here</th>
-      {% if can_create_place(g.user) %}
-      <th>Actions</th>
-      {% endif %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for place in places %}
-    <tr>
-      <td>{{ place.path }}{% if place.is_private %} <span class="text-muted small">(private)</span>{% endif %}</td>
-      <td>{{ place.item_count }}</td>
-      {% if can_manage_place(g.user, place) %}
-      <td>
-        <a class="action" href="{{ url_for('places.update', id=place['id']) }}">Edit</a>&nbsp;&nbsp;&nbsp;
-        <a class="action" href="{{ url_for('places.delete', id=place['id']) }}">Delete</a>
-      </td>
-      {% endif %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
+<div class="d-flex justify-content-end mb-3">
+  {% if can_create_place(g.user) %}
+  <a href="{{ url_for('places.create') }}" class="btn btn-primary btn-sm">Add place</a>
+  {% endif %}
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Path</th>
+          <th>Items</th>
+          {% if can_create_place(g.user) %}
+          <th>Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for place in places %}
+        <tr>
+          <td>{{ place.path }}{% if place.is_private %} <span class="text-muted small">(private)</span>{% endif %}</td>
+          <td>{{ place.item_count }}</td>
+          {% if can_manage_place(g.user, place) %}
+          <td>
+            <a class="action btn btn-sm btn-outline-light" href="{{ url_for('places.update', id=place['id']) }}">Edit</a>
+            <a class="action btn btn-sm btn-outline-danger" href="{{ url_for('places.delete', id=place['id']) }}">Delete</a>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% else %}
-<p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
+<p>Please <a href="{{ url_for('auth.login') }}">log in</a> first.</p>
 {% endif %}
 {% endblock %}

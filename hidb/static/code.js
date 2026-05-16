@@ -12,13 +12,81 @@
           value = min;
         else if(value > max)
           value = max;
-        $(this).val(value.toFixed(2)); 
+        $(this).val(value.toFixed(2));
       });
     });
   };
 })(jQuery);
 
+function csrfToken() {
+  var input = document.querySelector('input[name="_csrf_token"]');
+  return input ? input.value : "";
+}
+
+function bindPlaceCreateForm(modal, modalBody) {
+  var form = document.getElementById("place-create-form");
+  if (!form) {
+    return;
+  }
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    var data = new FormData(form);
+
+    fetch(form.action, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "X-CSRF-Token": csrfToken(),
+      },
+      body: data,
+    })
+      .then(function(response) {
+        return response.json().then(function(body) {
+          return { ok: response.ok, body: body };
+        });
+      })
+      .then(function(result) {
+        if (result.ok && result.body.ok) {
+          var select = document.getElementById("place_id");
+          var option = document.createElement("option");
+          option.value = result.body.id;
+          option.textContent = result.body.label;
+          option.selected = true;
+          select.appendChild(option);
+          modal.hide();
+          return;
+        }
+        if (result.body.html) {
+          modalBody.innerHTML = result.body.html;
+          bindPlaceCreateForm(modal, modalBody);
+        }
+      });
+  });
+}
+
 $(document).ready(function() {
-  console.log("test");
-  $('input.currency').currencyInput();
+  $("input.currency").currencyInput();
+
+  var addPlaceLink = document.getElementById("add-place-link");
+  var modalEl = document.getElementById("placeCreateModal");
+  if (!addPlaceLink || !modalEl) {
+    return;
+  }
+
+  var modal = new bootstrap.Modal(modalEl);
+  var modalBody = document.getElementById("place-create-modal-body");
+
+  addPlaceLink.addEventListener("click", function(e) {
+    e.preventDefault();
+    modalBody.innerHTML = '<p class="text-muted mb-0">Loading…</p>';
+    modal.show();
+
+    fetch(addPlaceLink.href)
+      .then(function(response) { return response.text(); })
+      .then(function(html) {
+        modalBody.innerHTML = html;
+        bindPlaceCreateForm(modal, modalBody);
+      });
+  });
 });

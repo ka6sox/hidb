@@ -1,0 +1,53 @@
+{% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header %}
+
+{% block title %}Create user{% endblock %}
+{% block header %}{{ page_header('Create user') }}{% endblock %}
+
+{% block content %}
+<div class="card auth-card" style="max-width: 32rem;">
+  <div class="card-body">
+    <form method="post">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input name="username" id="username" class="form-control" autocapitalize="none" autofocus required
+          value="{{ request.form.get('username', '') }}">
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" name="password" id="password" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm password</label>
+        <input type="password" name="confirm_password" id="confirm_password" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="role" class="form-label">Role</label>
+        <select name="role" id="role" class="form-select">
+          {% for role in roles %}
+          <option value="{{ role }}" {% if request.form.get('role', default_role) == role %}selected{% endif %}>
+            {{ role_label(role) }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if sponsor_options %}
+      <div class="mb-3" id="editor-sponsor-field">
+        <label for="editor_for_id" class="form-label">Editor sponsor</label>
+        <select name="editor_for_id" id="editor_for_id" class="form-select">
+          <option value="">— Select —</option>
+          {% for sponsor in sponsor_options %}
+          <option value="{{ sponsor.id }}">{{ sponsor.username }} ({{ role_label(sponsor.role) }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary w-100">Create user</button>
+    </form>
+  </div>
+  <div class="card-footer">
+    <a href="{{ url_for('auth.users') }}" class="btn btn-outline-light btn-sm">Cancel</a>
+  </div>
+</div>
+{% endblock %}
