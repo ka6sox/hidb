@@ -160,6 +160,76 @@ def test_csrf_rejects_missing_token(tmp_path):
     assert response.status_code == 400
 
 
+def test_owner_can_create_user(client, auth, app):
+    auth.login()
+    response = client.post(
+        "/auth/users/create",
+        data={
+            "username": "neweditor",
+            "password": "password123",
+            "confirm_password": "password123",
+            "role": "editor",
+            "editor_for_id": "1",
+        },
+    )
+    assert response.headers["Location"].endswith("/auth/users")
+
+    auth.logout()
+    login = auth.login("neweditor", "password123")
+    assert login.headers["Location"] in ("/", "/items")
+
+    with app.app_context():
+        user = User.query.filter_by(username="neweditor").one()
+        assert user.role == "editor"
+        assert user.editor_for_id == 1
+
+
+def test_co_owner_can_create_reader_and_editor(client, auth, app):
+    auth.login("other", "other")
+
+    reader = client.post(
+        "/auth/users/create",
+        data={
+            "username": "line_reader",
+            "password": "password123",
+            "confirm_password": "password123",
+            "role": "reader",
+        },
+    )
+    assert reader.headers["Location"].endswith("/auth/users")
+
+    editor = client.post(
+        "/auth/users/create",
+        data={
+            "username": "line_editor",
+            "password": "password123",
+            "confirm_password": "password123",
+            "role": "editor",
+        },
+    )
+    assert editor.headers["Location"].endswith("/auth/users")
+
+    with app.app_context():
+        assert User.query.filter_by(username="line_reader").one().role == "reader"
+        editor_user = User.query.filter_by(username="line_editor").one()
+        assert editor_user.role == "editor"
+        assert editor_user.editor_for_id == 2
+
+
+def test_co_owner_cannot_create_co_owner(client, auth):
+    auth.login("other", "other")
+    response = client.post(
+        "/auth/users/create",
+        data={
+            "username": "bad_co",
+            "password": "password123",
+            "confirm_password": "password123",
+            "role": "co_owner",
+        },
+    )
+    assert b"Invalid role." in response.data
+
+
 def test_csrf_accepts_valid_token(tmp_path):
     app = make_isolated_app(tmp_path, csrf_enabled=True)
     client = app.test_client()

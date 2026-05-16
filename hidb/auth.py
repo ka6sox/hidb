@@ -239,6 +239,81 @@ def register_user(username: str, password: str) -> tuple[User | None, str | None
     return None, "Registration failed. Please try again."
 
 
+def users_for_admin_list(actor: User | None):
+    users = User.query.order_by(User.username).all()
+    if is_owner(actor):
+        return users
+    if is_co_owner(actor):
+        return [
+            u
+            for u in users
+            if u.role == ROLE_READER
+            or (u.role == ROLE_EDITOR and u.editor_for_id == actor.id)
+        ]
+    return []
+
+
+def creatable_roles(actor: User | None):
+    if is_owner(actor):
+        return (ROLE_CO_OWNER, ROLE_EDITOR, ROLE_READER)
+    if is_co_owner(actor):
+        return (ROLE_EDITOR, ROLE_READER)
+    return ()
+
+
+def create_user_by_admin(
+    actor: User,
+    username: str,
+    password: str,
+    role: str,
+    editor_for_id: int | None = None,
+) -> tuple[User | None, str | None]:
+    username = username.strip()
+    if not username:
+        return None, "Username is required."
+
+    error = validate_password(password)
+    if error is not None:
+        return None, error
+
+    if User.query.filter_by(username=username).first() is not None:
+        return None, f"User {username} is already registered."
+
+    sponsor_id = None
+    if is_owner(actor):
+        if role not in {ROLE_CO_OWNER, ROLE_EDITOR, ROLE_READER}:
+            return None, "Invalid role."
+        if role == ROLE_EDITOR:
+            sponsor = User.query.get(editor_for_id)
+            if not is_owner_or_co_owner(sponsor):
+                return None, "Select an Owner or Co-owner for this Editor."
+            sponsor_id = sponsor.id
+    elif is_co_owner(actor):
+        if role not in {ROLE_EDITOR, ROLE_READER}:
+            return None, "Co-owners can only create Editors and Readers."
+        sponsor_id = actor.id if role == ROLE_EDITOR else None
+    else:
+        return None, "Forbidden"
+
+    user = User(
+        username=username,
+        password=generate_password_hash(password),
+        role=role,
+        editor_for_id=sponsor_id,
+        is_active=True,
+        password_updated_at=datetime.utcnow(),
+        role_updated_at=datetime.utcnow(),
+        role_updated_by_id=actor.id,
+    )
+    try:
+        db.session.add(user)
+        db.session.commit()
+        return user, None
+    except IntegrityError:
+        db.session.rollback()
+        return None, f"User {username} is already registered."
+
+
 def apply_role_change(
     actor: User,
     target: User,
@@ -375,10 +450,54 @@ def users():
         abort(403)
     return render_template(
         "auth/users.html.j2",
-        users=User.query.order_by(User.username).all(),
+        users=users_for_admin_list(g.user),
         sponsor_options=owner_sponsor_options(),
-        roles=(ROLE_READER, ROLE_EDITOR, ROLE_CO_OWNER),
+        roles=(
+            (ROLE_READER, ROLE_EDITOR, ROLE_CO_OWNER)
+            if is_owner(g.user)
+            else (ROLE_READER, ROLE_EDITOR)
+        ),
         original_owner_id=first_user_id(),
+    )
+
+
+@bp.route("/users/create", methods=("GET", "POST"))
+def create_user():
+    if not can_manage_users(g.user):
+        abort(403)
+
+    roles = creatable_roles(g.user)
+    sponsors = owner_sponsor_options() if is_owner(g.user) else []
+
+    if request.method == "POST":
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm_password", "")
+        role = request.form.get("role", ROLE_READER)
+        sponsor_raw = request.form.get("editor_for_id", "")
+        editor_for_id = int(sponsor_raw) if sponsor_raw else None
+
+        error = None
+        if password != confirm:
+            error = "Passwords do not match."
+        if error is None and role not in roles:
+            error = "Invalid role."
+
+        if error is None:
+            _, error = create_user_by_admin(
+                g.user, username, password, role, editor_for_id
+            )
+
+        if error is None:
+            flash(f"Created user {username.strip()}.")
+            return redirect(url_for("auth.users"))
+        flash(error)
+
+    return render_template(
+        "auth/create_user.html.j2",
+        roles=roles,
+        sponsor_options=sponsors,
+        default_role=ROLE_READER,
     )
 
 

@@ -1,0 +1,24 @@
+{% macro page_header(title, subtitle=None) %}
+<div class="page-header mb-4">
+  <h1>{{ title }}</h1>
+  {% if subtitle %}
+  <p class="lead mb-0">{{ subtitle }}</p>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro form_field(label, field_id, required=false) %}
+<div class="mb-3">
+  <label for="{{ field_id }}" class="form-label">{{ label }}{% if required %} <span class="text-danger">*</span>{% endif %}</label>
+  {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro item_thumb(photo, alt='') %}
+<img src="{% if photo %}{{ url_for('static', filename='photos/'+photo) }}{% else %}{{ url_for('static', filename='no_image.png') }}{% endif %}"
+  alt="{{ alt }}" class="img-thumbnail item-thumb">
+{% endmacro %}
+
+{% macro action_link(href, label, danger=false) %}
+<a href="{{ href }}" class="action{% if danger %} text-danger{% endif %}">{{ label }}</a>
+{% endmacro %}

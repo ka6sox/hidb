@@ -1,62 +1,80 @@
 {% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header, item_thumb %}
 
+{% block title %}Items{% endblock %}
 {% block header %}
-<h1>{% block title %}Items{% endblock %}</h1>
+{{ page_header('Items') }}
 {% endblock %}
 
 {% block content %}
 {% if g.user %}
 {% if items|length == 0 or places|length == 0 %}
-<ul>
-{% if places|length == 0 and can_create_place(g.user) %}<li>You have not yet defined any places. <a href="{{ url_for('places.create') }}">Add a place</a> first (for example a room, then shelves or boxes under it).</li>{% endif %}
-{% if places|length == 0 and not can_create_place(g.user) %}<li>There are no places in the database yet.</li>{% endif %}
-{% if items|length == 0 and places|length > 0 and can_create_item(g.user) %}<li>There are no items in the database. <a href="{{ url_for('items.create') }}">Add a new item</a></li>{% endif %}
-{% if items|length == 0 and places|length > 0 and not can_create_item(g.user) %}<li>There are no items in the database yet.</li>{% endif %}
-</ul>
-{% else %}
-{% if can_create_item(g.user) %}
-<p><a href="{{ url_for('items.create') }}">Add a new item</a></p>
-{% endif %}
-
-<p>There {% if items|length > 1 %} are {% else %} is {% endif %} {{ items|length }} item{% if items|length > 1 %}s{% endif %} in the database. Here are the most recent entries:</p>
-<table class="table table-borderless table-dark">
-  <thead>
-    <tr class="table-primary">
-      <th>Item</th>
-      <th>Location</th>
-      <th>Tags</th>
-      {% if g.user %}
-      <th>Actions</th>
+<div class="card">
+  <div class="card-body">
+    <ul class="mb-0">
+      {% if places|length == 0 and can_create_place(g.user) %}
+      <li>You have not yet defined any places. <a href="{{ url_for('places.create') }}">Add a place</a> first (for example a room, then shelves or boxes under it).</li>
       {% endif %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in items %}
-    <tr>
-      <td>
-      <img src="{% if item['photo'] %}{{ url_for('static', filename='photos/'+item['photo']) }}{% else %}{{ url_for('static', filename='no_image.png') }}{% endif %}" class="img-thumbnail img-fluid" style="max-height: 50px; max-width: 50px;">&nbsp;&nbsp;&nbsp;
-      <A HREF="{{ url_for('items.details', id=item['id']) }}">{{ item.name }}</A></td>
-      <td>{{ item.location_path }}</td>
-      <td>{{ item.tag_list }}</td>
-      {% if g.user %}
-      <td>
-        {% if can_edit_item(g.user, item) %}
-        <a href="{{ url_for('items.update', id=item['id']) }}">Edit</a>&nbsp;&nbsp;
-        {% endif %}
-        {% if can_delete_item(g.user, item) %}
-        <form method="post" action="{{ url_for('items.delete', id=item['id']) }}" class="d-inline" onsubmit="return confirm('Are you sure?');">
-          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-link p-0 align-baseline">Delete</button>
-        </form>
-        {% endif %}
-      </td>
+      {% if places|length == 0 and not can_create_place(g.user) %}
+      <li>There are no places in the database yet.</li>
       {% endif %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+      {% if items|length == 0 and places|length > 0 and can_create_item(g.user) %}
+      <li>There are no items in the database. <a href="{{ url_for('items.create') }}">Add a new item</a></li>
+      {% endif %}
+      {% if items|length == 0 and places|length > 0 and not can_create_item(g.user) %}
+      <li>There are no items in the database yet.</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+{% else %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <p class="text-muted mb-0">{{ items|length }} recent item{% if items|length != 1 %}s{% endif %}</p>
+  {% if can_create_item(g.user) %}
+  <a href="{{ url_for('items.create') }}" class="btn btn-primary btn-sm">Add item</a>
+  {% endif %}
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Location</th>
+          <th>Tags</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td class="align-middle">
+            <div class="d-flex align-items-center gap-2">
+              {{ item_thumb(item.photo, item.name) }}
+              <a href="{{ url_for('items.details', id=item['id']) }}">{{ item.name }}</a>
+            </div>
+          </td>
+          <td class="align-middle text-muted">{{ item.location_path }}</td>
+          <td class="align-middle small">{{ item.tag_list }}</td>
+          <td class="align-middle">
+            {% if can_edit_item(g.user, item) %}
+            <a href="{{ url_for('items.update', id=item['id']) }}" class="action btn btn-sm btn-outline-light">Edit</a>
+            {% endif %}
+            {% if can_delete_item(g.user, item) %}
+            <form method="post" action="{{ url_for('items.delete', id=item['id']) }}" class="d-inline" onsubmit="return confirm('Are you sure?');">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endif %}
 {% else %}
-<p>Please <A HREF="{{ url_for('auth.login') }}">log in</A> first.</p>
+<p>Please <a href="{{ url_for('auth.login') }}">log in</a> first.</p>
 {% endif %}
 {% endblock %}

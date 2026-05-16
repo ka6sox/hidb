@@ -1,59 +1,67 @@
 {% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header %}
 
-{% block header %}
-  <h1>{% block title %}Users{% endblock %}</h1>
-{% endblock %}
+{% block title %}Users{% endblock %}
+{% block header %}{{ page_header('Users') }}{% endblock %}
 
 {% block content %}
-<table class="table table-borderless table-dark">
-  <thead>
-    <tr class="table-primary">
-      <th>Username</th>
-      <th>Role</th>
-      <th>Editor for</th>
-      <th>Status</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for user in users %}
-    <tr>
-      <td>{{ user.username }}{% if user.id == original_owner_id %} (original Owner){% endif %}</td>
-      <td>{{ role_label(user.role) }}</td>
-      <td>{{ user.editor_for.username if user.editor_for else '' }}</td>
-      <td>{{ 'Active' if user.is_active else 'Disabled' }}</td>
-      <td>
-        {% if user.id != original_owner_id and user.is_active %}
-        <form method="post" action="{{ url_for('auth.update_user_role', user_id=user.id) }}" class="mb-2">
-          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-          <select name="role">
-            {% for role in roles %}
-            <option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ role_label(role) }}</option>
-            {% endfor %}
-          </select>
-          <select name="editor_for_id">
-            <option value="">Editor sponsor</option>
-            {% for sponsor in sponsor_options %}
-            <option value="{{ sponsor.id }}" {% if user.editor_for_id == sponsor.id %}selected{% endif %}>{{ sponsor.username }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit">Update role</button>
-        </form>
-        {% endif %}
-
-        {% if g.user.role == 'owner' %}
-        <a href="{{ url_for('auth.reset_user_password', user_id=user.id) }}">Reset password</a>
-        {% if user.id != original_owner_id %}
-        <form method="post" action="{{ url_for('auth.update_user_active', user_id=user.id) }}" class="d-inline">
-          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="is_active" value="{{ '0' if user.is_active else '1' }}">
-          <button type="submit">{{ 'Disable' if user.is_active else 'Enable' }}</button>
-        </form>
-        {% endif %}
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="d-flex justify-content-end mb-3">
+  <a href="{{ url_for('auth.create_user') }}" class="btn btn-primary btn-sm">Create user</a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Editor for</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.username }}{% if user.id == original_owner_id %} <span class="text-muted small">(original Owner)</span>{% endif %}</td>
+          <td>{{ role_label(user.role) }}</td>
+          <td class="text-muted small">{{ user.editor_for.username if user.editor_for else '—' }}</td>
+          <td>{% if user.is_active %}<span class="text-success">Active</span>{% else %}<span class="text-muted">Disabled</span>{% endif %}</td>
+          <td>
+            {% if user.id != original_owner_id and user.is_active %}
+            <form method="post" action="{{ url_for('auth.update_user_role', user_id=user.id) }}" class="d-flex flex-wrap gap-2 align-items-center mb-2">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <select name="role" class="form-select form-select-sm" style="width: auto;">
+                {% for role in roles %}
+                <option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ role_label(role) }}</option>
+                {% endfor %}
+              </select>
+              <select name="editor_for_id" class="form-select form-select-sm" style="width: auto;">
+                <option value="">Editor sponsor</option>
+                {% for sponsor in sponsor_options %}
+                <option value="{{ sponsor.id }}" {% if user.editor_for_id == sponsor.id %}selected{% endif %}>{{ sponsor.username }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-sm btn-outline-light">Update role</button>
+            </form>
+            {% endif %}
+            {% if g.user.role == 'owner' %}
+            <div class="d-flex flex-wrap gap-2">
+              <a href="{{ url_for('auth.reset_user_password', user_id=user.id) }}" class="action btn btn-sm btn-outline-light">Reset password</a>
+              {% if user.id != original_owner_id %}
+              <form method="post" action="{{ url_for('auth.update_user_active', user_id=user.id) }}" class="d-inline">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="is_active" value="{{ '0' if user.is_active else '1' }}">
+                <button type="submit" class="btn btn-sm btn-outline-{{ 'danger' if user.is_active else 'success' }}">{{ 'Disable' if user.is_active else 'Enable' }}</button>
+              </form>
+              {% endif %}
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

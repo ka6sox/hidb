@@ -1,0 +1,42 @@
+<form method="post" id="place-create-form" action="{{ url_for('places.create', embed=1) if embed else url_for('places.create') }}">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+  {% if embed %}
+  <input type="hidden" name="embed" value="1">
+  {% endif %}
+  {% if error %}
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
+  {% endif %}
+  <div class="mb-3">
+    <label for="parent_id" class="form-label">Inside (optional)</label>
+    <select name="parent_id" id="parent_id" class="form-select">
+      <option value="">— Root (top level) —</option>
+      {% for p in parents %}
+      <option value="{{ p.id }}" {% if request.form.get('parent_id') == p.id|string %}selected{% endif %}>{{ p.label }}</option>
+      {% endfor %}
+    </select>
+    <div class="form-text">Leave as root for a room or top-level area; pick a parent for shelves, boxes, etc.</div>
+  </div>
+  <div class="mb-3">
+    <label for="place_name" class="form-label">Name</label>
+    <input name="name" id="place_name" class="form-control" required autofocus
+      value="{{ request.form.get('name', '') }}">
+  </div>
+  <div class="mb-3">
+    <label for="description" class="form-label">Notes (optional)</label>
+    <textarea name="description" id="description" class="form-control" rows="3">{{ request.form.get('description', '') }}</textarea>
+  </div>
+  <div class="mb-3 form-check">
+    <input type="checkbox" class="form-check-input" name="is_private" id="is_private" value="1"
+      {% if request.form.get('is_private') == '1' %}checked{% endif %}>
+    <label class="form-check-label" for="is_private">Private place</label>
+    <div class="form-text">Only you and users in your sponsorship line can see this place. Public places are visible to all logged-in users.</div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end">
+    {% if embed %}
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-primary">Save place</button>
+    {% else %}
+    <input type="submit" class="btn btn-primary" value="Save">
+    {% endif %}
+  </div>
+</form>

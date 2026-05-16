@@ -1,90 +1,69 @@
 {% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header %}
 
-{% block header %}
-<h1>{% block title %}Edit "{{ item['name'] }}"{% endblock %}</h1>
-{% endblock %}
+{% block title %}Edit "{{ item['name'] }}"{% endblock %}
+{% block header %}{{ page_header('Edit item', item.name) }}{% endblock %}
 
 {% block content %}
-{% if places|length < 1 %} You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.
+{% if places|length < 1 %}
+<div class="alert alert-danger">You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.</div>
 {% else %}
-  <form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" class="card">
+  <div class="card-body">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-    <table class="table table-borderless table-dark">
-      <tr>
-        <td><label for="name">Make/Model:</label></td>
-        <td><input name="name" autofocus="autofocus" id="name" value="{{ request.form.get('name', item['name']) }}" required>
-        </td>
-      </tr>
-      <tr>
-        <td><label for="serial_no">Serial #:</label></td>
-        <td><input name="serial_no" autocomplete="off" id="serial_no" value="{{ request.form.get('serial_no', item['serial_no'] or '') }}"></td>
-      </tr>
-      <tr>
-        <td>
-          <label for="qty">Quantity:</label>
-        </td>
-        <td>
-          <input name="qty" id="qty" type="number" value="{{ request.form.get('qty', item['qty']) }}" required>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="cost">Cost:</label>
-        </td>
-        <td>
-          <input name="cost" class="currency" id="cost" type="number" min="0.01" step="0.01" value="{% if request.form.get('cost') or (item['cost'] is string and item['cost']) or (item['cost'] is float and item['cost'] > 0.0) %}{{ '%.2f'|format(request.form.get('cost') or item['cost']) }}{% endif %}">
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="place_id">Place:</label>
-        </td>
-        <td>
-          <select name="place_id" id="place_id" required>
-            {% for p in places %}
-            <option value="{{ p.id }}" {% if item and p.id == item['place_id'] %}selected{% endif %}>{{ p.label }}</option>
-            {% endfor %}
-          </select>
-          <br />
-          <a class="action" href="{{ url_for('places.create') }}">Add a place</a>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="sublocation">Sublocation:</label>
-        </td>
-        <td>
-          <input name="sublocation" id="sublocation" value="{{ request.form.get('sublocation', item['sublocation'] or '') }}">
-          <br />
-          <span class="text-muted small">Optional detail inside the selected place, such as "on top of the dongle".</span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="tags">Tags:</label>
-        </td>
-        <td>
-          <input name="tags" id="tags" value="{{ request.form.get('tags', item['tag_list']) }}">
-          <br />
-          <span class="text-muted small">Optional comma-separated tags, such as "snowboard, winter gear".</span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="photo">Update Photo?</label>
-        </td>
-        <td>
-          <input type="file" name="photo" />
-        </td>
-      </tr>
-    </table>
-    <p><label for="description">Description:</label><br />
-      <textarea name="description" id="description">{{ request.form.get('description', item['description'] or '') }}</textarea>
-    </p>
-
-    <input type="submit" value="Save">
-  </form>
-    <a href="{{ url_for('items.details', id=item['id']) }}">Cancel</a><br />
-
+    <div class="row g-3">
+      <div class="col-md-8">
+        <label for="name" class="form-label">Make/Model <span class="text-danger">*</span></label>
+        <input name="name" class="form-control" autofocus id="name" value="{{ request.form.get('name', item['name']) }}" required>
+      </div>
+      <div class="col-md-4">
+        <label for="serial_no" class="form-label">Serial #</label>
+        <input name="serial_no" class="form-control" autocomplete="off" id="serial_no" value="{{ request.form.get('serial_no', item['serial_no'] or '') }}">
+      </div>
+      <div class="col-md-3">
+        <label for="qty" class="form-label">Quantity <span class="text-danger">*</span></label>
+        <input name="qty" id="qty" type="number" class="form-control" value="{{ request.form.get('qty', item['qty']) }}" required>
+      </div>
+      <div class="col-md-3">
+        <label for="cost" class="form-label">Cost</label>
+        <input name="cost" class="form-control currency" id="cost" type="number" min="0.01" step="0.01"
+          value="{% if request.form.get('cost') or (item['cost'] is string and item['cost']) or (item['cost'] is float and item['cost'] > 0.0) %}{{ '%.2f'|format(request.form.get('cost') or item['cost']) }}{% endif %}">
+      </div>
+      <div class="col-md-6">
+        <label for="place_id" class="form-label">Place <span class="text-danger">*</span></label>
+        <select name="place_id" id="place_id" class="form-select" required>
+          {% for p in places %}
+          <option value="{{ p.id }}" {% if item and p.id == item['place_id'] %}selected{% endif %}>{{ p.label }}</option>
+          {% endfor %}
+        </select>
+        {% if can_create_place(g.user) %}
+        <div class="form-text"><a class="action" href="{{ url_for('places.create', embed=1) }}" id="add-place-link">Add a place</a></div>
+        {% endif %}
+      </div>
+      <div class="col-12">
+        <label for="sublocation" class="form-label">Sublocation</label>
+        <input name="sublocation" class="form-control" id="sublocation" value="{{ request.form.get('sublocation', item['sublocation'] or '') }}">
+        <div class="form-text">Optional detail inside the selected place.</div>
+      </div>
+      <div class="col-12">
+        <label for="tags" class="form-label">Tags</label>
+        <input name="tags" class="form-control" id="tags" value="{{ request.form.get('tags', item['tag_list']) }}">
+      </div>
+      <div class="col-12">
+        <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+        <textarea name="description" class="form-control" id="description" rows="4" required>{{ request.form.get('description', item['description'] or '') }}</textarea>
+      </div>
+      <div class="col-12">
+        <label for="photo" class="form-label">Update photo</label>
+        <input type="file" name="photo" class="form-control" id="photo">
+      </div>
+    </div>
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{{ url_for('items.details', id=item['id']) }}" class="btn btn-outline-light">Cancel</a>
+  </div>
+</form>
+{% include 'items/_place_modal.html.j2' %}
 {% endif %}
-  {% endblock %}
+{% endblock %}

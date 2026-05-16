@@ -1,36 +1,33 @@
 {% extends 'base.html.j2' %}
+{% from '_macros.html.j2' import page_header %}
 
-{% block header %}
-  <h1>{% block title %}Edit "{{ place['name'] }}"{% endblock %}</h1>
-  <p class="text-muted">{{ place.path }}</p>
-{% endblock %}
+{% block title %}Edit "{{ place['name'] }}"{% endblock %}
+{% block header %}{{ page_header('Edit place', place.path) }}{% endblock %}
 
 {% block content %}
-<form method="post">
-  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-  <table class="table table-borderless table-dark">
-    <tr>
-      <td><label for="name">Name:</label></td>
-      <td><input name="name" id="name" autofocus required
-        value="{{ request.form.get('name', place['name']) }}"></td>
-    </tr>
-      <tr>
-        <td><label for="description">Notes:</label></td>
-        <td><textarea name="description" id="description" rows="3">{{ request.form.get('description', place['description'] or '') }}</textarea></td>
-      </tr>
-      <tr>
-        <td><label for="is_private">Private place:</label></td>
-        <td>
-          <input type="checkbox" name="is_private" id="is_private" value="1"
-            {% if request.form.get('is_private', '1' if place['is_private'] else '0') == '1' %}checked{% endif %}>
-          <p class="small text-muted mb-0">Only users in this place's sponsorship line can see it when private.</p>
-        </td>
-      </tr>
-    </table>
-  <input type="submit" value="Save">
+<form method="post" class="card">
+  <div class="card-body">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input name="name" id="name" class="form-control" autofocus required
+        value="{{ request.form.get('name', place['name']) }}">
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Notes</label>
+      <textarea name="description" id="description" class="form-control" rows="3">{{ request.form.get('description', place['description'] or '') }}</textarea>
+    </div>
+    <div class="form-check mb-3">
+      <input type="checkbox" class="form-check-input" name="is_private" id="is_private" value="1"
+        {% if request.form.get('is_private', '1' if place['is_private'] else '0') == '1' %}checked{% endif %}>
+      <label class="form-check-label" for="is_private">Private place</label>
+      <div class="form-text">Only users in this place's sponsorship line can see it when private.</div>
+    </div>
+  </div>
+  <div class="card-footer d-flex gap-2 flex-wrap">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{{ url_for('places.index') }}" class="btn btn-outline-light">Cancel</a>
+    <a class="action text-danger ms-auto align-self-center" href="{{ url_for('places.delete', id=place['id']) }}">Delete this place…</a>
+  </div>
 </form>
-<p>
-  <a href="{{ url_for('places.index') }}">Back to places</a><br>
-  <a class="action text-danger" href="{{ url_for('places.delete', id=place['id']) }}">Delete this place…</a>
-</p>
 {% endblock %}

@@ -1,6 +1,6 @@
 from typing import List, Optional, Set
 
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for
+from flask import Blueprint, flash, g, jsonify, redirect, render_template, request, url_for
 from sqlalchemy import func, text
 from werkzeug.exceptions import abort
 
@@ -59,6 +59,17 @@ def place_paths_for_ids(place_ids: list[int], places=None) -> dict[int, str]:
         return " / ".join(reversed(parts))
 
     return {pid: path_for(pid) for pid in place_ids}
+
+
+def place_ids_matching_path_term(term: str) -> list[int]:
+    """Visible place ids whose full path contains term (case-insensitive)."""
+    allowed = visible_place_ids()
+    visible = _visible_places()
+    if not visible or not allowed:
+        return []
+    paths = place_paths_for_ids([p.id for p in visible], places=visible)
+    needle = term.lower()
+    return [pid for pid, path in paths.items() if pid in allowed and needle in path.lower()]
 
 
 def get_place_options(owner_id: int | None = None):
@@ -170,6 +181,57 @@ def index():
     return render_template("places/index.html.j2", places=rows)
 
 
+def _wants_embed_response():
+    return (
+        request.args.get("embed") == "1"
+        or request.form.get("embed") == "1"
+        or "application/json" in request.headers.get("Accept", "")
+    )
+
+
+def parse_place_create_form():
+    name = request.form.get("name", "").strip()
+    description = request.form.get("description", "").strip()
+    parent_raw = request.form.get("parent_id", "").strip()
+    error = None
+
+    if not name:
+        error = "Name is required."
+
+    parent_id = None
+    if parent_raw:
+        try:
+            parent_id = int(parent_raw)
+        except ValueError:
+            error = "Invalid parent place."
+
+    is_private = request.form.get("is_private") == "1"
+    if error is None and parent_id is not None:
+        parent = Place.query.get(parent_id)
+        if parent is None:
+            error = "Parent place does not exist."
+        elif not can_view_place(g.user, parent):
+            error = "You cannot add under a place you cannot access."
+        elif parent.is_private:
+            is_private = True
+
+    return name, description, parent_id, is_private, error
+
+
+def create_place_record(name, description, parent_id, is_private):
+    place = Place(
+        name=name,
+        description=description if description else None,
+        parent_id=parent_id,
+        creator_id=g.user.id,
+        is_private=is_private,
+    )
+    db.session.add(place)
+    db.session.commit()
+    label = place_paths_for_ids([place.id]).get(place.id, name)
+    return place, label
+
+
 @bp.route("/places/create", methods=("GET", "POST"))
 @login_required
 def create():
@@ -177,50 +239,38 @@ def create():
         abort(403)
 
     parents = get_place_options()
+    embed = request.args.get("embed") == "1" or request.form.get("embed") == "1"
 
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        description = request.form.get("description", "").strip()
-        parent_raw = request.form.get("parent_id", "").strip()
-        error = None
-
-        if not name:
-            error = "Name is required."
-
-        parent_id = None
-        if parent_raw:
-            try:
-                parent_id = int(parent_raw)
-            except ValueError:
-                error = "Invalid parent place."
-
-        is_private = request.form.get("is_private") == "1"
-        parent = None
-        if error is None and parent_id is not None:
-            parent = Place.query.get(parent_id)
-            if parent is None:
-                error = "Parent place does not exist."
-            elif not can_view_place(g.user, parent):
-                error = "You cannot add under a place you cannot access."
-            elif parent.is_private:
-                is_private = True
+        name, description, parent_id, is_private, error = parse_place_create_form()
 
         if error is not None:
+            if _wants_embed_response():
+                html = render_template(
+                    "places/_form.html.j2",
+                    parents=parents,
+                    embed=True,
+                    error=error,
+                )
+                return jsonify({"ok": False, "html": html}), 400
             flash(error)
         else:
-            db.session.add(
-                Place(
-                    name=name,
-                    description=description if description else None,
-                    parent_id=parent_id,
-                    creator_id=g.user.id,
-                    is_private=is_private,
-                )
+            place, label = create_place_record(
+                name, description, parent_id, is_private
             )
-            db.session.commit()
+            if _wants_embed_response():
+                return jsonify({"ok": True, "id": place.id, "label": label})
             return redirect(url_for("places.index"))
 
-    return render_template("places/create.html.j2", parents=parents)
+    if embed:
+        return render_template(
+            "places/_form.html.j2",
+            parents=parents,
+            embed=True,
+            error=None,
+        )
+
+    return render_template("places/create.html.j2", parents=parents, embed=False)
 
 
 @bp.route("/places/<int:id>/update", methods=("GET", "POST"))
