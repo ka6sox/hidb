@@ -1,5 +1,5 @@
 {% extends 'base.html.j2' %}
-{% from '_macros.html.j2' import page_header %}
+{% from '_macros.html.j2' import page_header, item_thumb %}
 
 {% block title %}{{ item['name'] }}{% endblock %}
 {% block header %}{{ page_header(item.name) }}{% endblock %}
@@ -15,7 +15,7 @@
           <dd class="col-sm-8">{{ item['serial_no'] }}</dd>
           {% endif %}
           <dt class="col-sm-4 text-muted">Quantity</dt>
-          <dd class="col-sm-8">{{ item['qty'] }}</dd>
+          <dd class="col-sm-8">{{ item['qty_display'] }}</dd>
           {% if item['cost'] is string and item['cost'] %}
           <dt class="col-sm-4 text-muted">Cost</dt>
           <dd class="col-sm-8">{{ item['cost']|format_currency }}</dd>
@@ -30,6 +30,8 @@
           <dd class="col-sm-8">{{ item['tag_list'] }}</dd>
           {% endif %}
           <dt class="col-sm-4 text-muted">Acquired</dt>
+          <dd class="col-sm-8">{{ item['date_acquired'].strftime('%Y-%m-%d') }}</dd>
+          <dt class="col-sm-4 text-muted">Added</dt>
           <dd class="col-sm-8">{{ item['date_added'].strftime('%Y-%m-%d %H:%M') }}</dd>
         </dl>
         {% if item['description'] %}
@@ -53,8 +55,28 @@
     </div>
   </div>
   <div class="col-lg-7">
+    {% if item['photos']|length > 1 %}
+    <div id="itemPhotoCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        {% for photo in item['photos'] %}
+        <div class="carousel-item{% if loop.first %} active{% endif %}">
+          <img src="{{ url_for('static', filename='photos/'+photo.filename) }}" class="d-block w-100 item-photo-lg" alt="{{ item.name }}">
+        </div>
+        {% endfor %}
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#itemPhotoCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#itemPhotoCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+    {% else %}
     <img src="{% if item['photo'] %}{{ url_for('static', filename='photos/'+item['photo']) }}{% else %}{{ url_for('static', filename='no_image.png') }}{% endif %}"
       alt="{{ item.name }}" class="img-fluid item-photo-lg w-100">
+    {% endif %}
   </div>
 </div>
 {% endblock %}

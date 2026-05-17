@@ -68,6 +68,9 @@ def create_app(test_config=None):
     from . import places
     app.register_blueprint(places.bp)
 
+    from . import units
+    app.register_blueprint(units.bp)
+
     from . import search
     app.register_blueprint(search.bp)
 

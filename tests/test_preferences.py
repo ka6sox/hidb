@@ -16,8 +16,27 @@ def test_logged_in_user_can_save_theme(client, auth, app):
         assert user.preferences["theme"] == "light"
 
     page = client.get("/items")
-    assert b'data-theme = "light"' in page.data or b"dataset.theme = \"light\"" in page.data
-    assert b'documentElement.dataset.theme = "light"' in page.data
+    assert b'preference === "light"' in page.data
+    assert b"document.documentElement.dataset.theme = effective" in page.data
+
+
+def test_logged_in_user_can_save_system_theme(client, auth, app):
+    auth.login()
+
+    response = client.post(
+        "/auth/preferences",
+        data={"theme": "system"},
+        headers={"Accept": "application/json"},
+    )
+    assert response.status_code == 204
+
+    with app.app_context():
+        user = User.query.filter_by(username="test").one()
+        assert user.preferences["theme"] == "system"
+
+    page = client.get("/items")
+    assert b'preference === "system"' in page.data
+    assert b'data-theme-preference="system"' in page.data
 
 
 def test_invalid_theme_rejected(client, auth):
@@ -47,4 +66,5 @@ def test_logged_in_page_sets_theme_from_preferences(client, auth, app):
         db.session.commit()
 
     response = client.get("/items")
-    assert b'documentElement.dataset.theme = "light"' in response.data
+    assert b'preference === "light"' in response.data
+    assert b"document.documentElement.dataset.theme = effective" in response.data
