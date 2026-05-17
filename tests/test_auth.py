@@ -238,6 +238,56 @@ def test_co_owner_users_page_lists_all_users(client, auth, app):
     assert b"other_line_editor" in response.data
 
 
+def test_owner_can_reassign_co_owner_editor(client, auth, app):
+    with app.app_context():
+        from datetime import datetime
+
+        editor = User(
+            username="co_editor",
+            password=generate_password_hash("password123"),
+            role="editor",
+            editor_for_id=2,
+            password_updated_at=datetime.utcnow(),
+        )
+        db.session.add(editor)
+        db.session.commit()
+        editor_id = editor.id
+
+    auth.login()
+    response = client.post(
+        f"/auth/users/{editor_id}/role",
+        data={"role": "editor", "editor_for_id": "1"},
+    )
+    assert response.headers["Location"].endswith("/auth/users")
+    with app.app_context():
+        assert User.query.get(editor_id).editor_for_id == 1
+
+
+def test_owner_preserves_editor_sponsor_without_resubmitting(client, auth, app):
+    with app.app_context():
+        from datetime import datetime
+
+        editor = User(
+            username="co_editor",
+            password=generate_password_hash("password123"),
+            role="editor",
+            editor_for_id=2,
+            password_updated_at=datetime.utcnow(),
+        )
+        db.session.add(editor)
+        db.session.commit()
+        editor_id = editor.id
+
+    auth.login()
+    response = client.post(
+        f"/auth/users/{editor_id}/role",
+        data={"role": "editor"},
+    )
+    assert response.headers["Location"].endswith("/auth/users")
+    with app.app_context():
+        assert User.query.get(editor_id).editor_for_id == 2
+
+
 def test_co_owner_cannot_create_co_owner(client, auth):
     auth.login("other", "other")
     response = client.post(

@@ -65,6 +65,17 @@
         <label for="tags" class="form-label">Tags</label>
         <input name="tags" class="form-control" id="tags" value="{{ request.form.get('tags', item['tag_list']) }}">
       </div>
+      {% if can_show_item_transfer(g.user, item) %}
+      <div class="col-md-6">
+        <label for="creator_id" class="form-label">Line owner</label>
+        <select name="creator_id" id="creator_id" class="form-select">
+          {% for user in line_owner_options %}
+          <option value="{{ user.id }}" {% if (request.form.get('creator_id', item['creator_id']|string)|int) == user.id %}selected{% endif %}>{{ user.username }} ({{ role_label(user.role) }})</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">Transfer this item to another sponsorship line.</div>
+      </div>
+      {% endif %}
       <div class="col-12">
         <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
         <textarea name="description" class="form-control" id="description" rows="4" required>{{ request.form.get('description', item['description'] or '') }}</textarea>

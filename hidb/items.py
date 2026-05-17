@@ -20,8 +20,11 @@ from hidb.auth import (
     can_create_item,
     can_delete_item,
     can_edit_item,
+    can_show_item_transfer,
+    can_transfer_item,
     can_use_place_for_item,
     item_owner_id_for,
+    item_line_owner_options,
     login_required,
 )
 from hidb.models import Item, ItemPhoto, Place, Tag, db
@@ -422,10 +425,33 @@ def update(id):
                     )
                     break
 
+        creator_raw = request.form.get("creator_id", "").strip()
+        new_creator_id = None
+        if error is None and creator_raw:
+            try:
+                new_creator_id = int(creator_raw)
+            except ValueError:
+                error = "Invalid line owner."
+
         if error is not None:
             flash(error)
         else:
             item_obj = _items_query().get(id)
+            if new_creator_id is not None and new_creator_id != item_obj.creator_id:
+                if can_transfer_item(g.user, item_obj, new_creator_id):
+                    item_obj.creator_id = new_creator_id
+                elif can_show_item_transfer(g.user, item_obj):
+                    flash("You cannot transfer this item to that line.")
+                    return render_template(
+                        "items/update.html.j2",
+                        item=item_dict,
+                        places=places_opts,
+                        units=units_opts,
+                        date_acquired_value=item_dict["date_acquired"].strftime(
+                            "%Y-%m-%d"
+                        ),
+                        line_owner_options=item_line_owner_options(g.user, item_obj),
+                    )
             item_obj.name = name
             item_obj.serial_no = serial_no if serial_no else None
             item_obj.description = description
@@ -446,12 +472,14 @@ def update(id):
                 return redirect(url_for("items.index"))
 
     acquired_date = item_dict["date_acquired"].strftime("%Y-%m-%d")
+    item_obj = _items_query().get(id)
     return render_template(
         "items/update.html.j2",
         item=item_dict,
         places=places_opts,
         units=units_opts,
         date_acquired_value=acquired_date,
+        line_owner_options=item_line_owner_options(g.user, item_obj),
     )
 
 
