@@ -28,7 +28,7 @@
           <td class="text-muted small">{{ user.editor_for.username if user.editor_for else '—' }}</td>
           <td>{% if user.is_active %}<span class="text-success">Active</span>{% else %}<span class="text-muted">Disabled</span>{% endif %}</td>
           <td>
-            {% if user.id != original_owner_id and user.is_active %}
+            {% if can_manage_user(g.user, user) %}
             <form method="post" action="{{ url_for('auth.update_user_role', user_id=user.id) }}" class="d-flex flex-wrap gap-2 align-items-center mb-2">
               <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
               <select name="role" class="form-select form-select-sm" style="width: auto;">

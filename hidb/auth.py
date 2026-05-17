@@ -115,6 +115,18 @@ def can_manage_users(actor: User | None) -> bool:
     return is_owner_or_co_owner(actor)
 
 
+def can_manage_user(actor: User | None, target: User) -> bool:
+    if not can_manage_users(actor) or is_original_owner(target) or not target.is_active:
+        return False
+    if is_owner(actor):
+        return True
+    if is_co_owner(actor):
+        if target.role == ROLE_READER:
+            return True
+        return target.role == ROLE_EDITOR and target.editor_for_id == actor.id
+    return False
+
+
 def can_create_place(actor: User | None) -> bool:
     return is_owner_or_co_owner(actor)
 
@@ -262,17 +274,9 @@ def register_user(username: str, password: str) -> tuple[User | None, str | None
 
 
 def users_for_admin_list(actor: User | None):
-    users = User.query.order_by(User.username).all()
-    if is_owner(actor):
-        return users
-    if is_co_owner(actor):
-        return [
-            u
-            for u in users
-            if u.role == ROLE_READER
-            or (u.role == ROLE_EDITOR and u.editor_for_id == actor.id)
-        ]
-    return []
+    if not can_manage_users(actor):
+        return []
+    return User.query.order_by(User.username).all()
 
 
 def creatable_roles(actor: User | None):
@@ -413,6 +417,7 @@ def auth_template_helpers():
         "can_manage_place": can_manage_place,
         "can_view_place": can_view_place,
         "can_manage_users": can_manage_users,
+        "can_manage_user": can_manage_user,
         "role_label": role_label,
         "theme": user_theme(getattr(g, "user", None)),
     }
