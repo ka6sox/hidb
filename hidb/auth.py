@@ -184,13 +184,71 @@ def can_use_place_for_item(actor: User | None, place) -> bool:
     return can_view_place(actor, place)
 
 
+def line_root_users():
+    return (
+        User.query.filter(User.role.in_(OWNER_ROLES), User.is_active.is_(True))
+        .order_by(User.username)
+        .all()
+    )
+
+
+def is_active_line_root(user_id: int) -> bool:
+    user = User.query.get(user_id)
+    return user is not None and user.is_active and user.role in OWNER_ROLES
+
+
 def can_edit_item(actor: User | None, item) -> bool:
+    if is_owner(actor):
+        return True
     owner_id = item_owner_id_for(actor)
     return owner_id is not None and _get(item, "creator_id") == owner_id
 
 
 def can_delete_item(actor: User | None, item) -> bool:
+    if is_owner(actor):
+        return True
     return is_owner_or_co_owner(actor) and _get(item, "creator_id") == actor.id
+
+
+def can_transfer_item(actor: User | None, item, new_creator_id: int) -> bool:
+    if actor is None or not actor.is_active or item is None:
+        return False
+    if not is_active_line_root(new_creator_id):
+        return False
+    if _get(item, "creator_id") == new_creator_id:
+        return False
+    if is_owner(actor):
+        return True
+    if is_co_owner(actor):
+        if _get(item, "creator_id") != actor.id:
+            return False
+        sponsor = User.query.get(new_creator_id)
+        return sponsor is not None and sponsor.role == ROLE_CO_OWNER
+    return False
+
+
+def item_transfer_targets(actor: User | None, item):
+    return [
+        user
+        for user in line_root_users()
+        if can_transfer_item(actor, item, user.id)
+    ]
+
+
+def can_show_item_transfer(actor: User | None, item) -> bool:
+    creator_id = _get(item, "creator_id")
+    return any(user.id != creator_id for user in item_transfer_targets(actor, item))
+
+
+def item_line_owner_options(actor: User | None, item):
+    creator_id = _get(item, "creator_id")
+    by_id: dict[int, User] = {}
+    current = User.query.get(creator_id)
+    if current is not None and current.is_active and current.role in OWNER_ROLES:
+        by_id[current.id] = current
+    for user in item_transfer_targets(actor, item):
+        by_id[user.id] = user
+    return sorted(by_id.values(), key=lambda u: u.username.lower())
 
 
 def role_label(role: str | None) -> str:
@@ -356,10 +414,17 @@ def apply_role_change(
 
     if is_owner(actor):
         if new_role == ROLE_EDITOR:
-            sponsor = User.query.get(editor_for_id)
-            if not is_owner_or_co_owner(sponsor):
-                return "Select an Owner or Co-owner for this Editor."
-            target.editor_for_id = sponsor.id
+            if (
+                editor_for_id is None
+                and target.role == ROLE_EDITOR
+                and target.editor_for_id is not None
+            ):
+                pass
+            else:
+                sponsor = User.query.get(editor_for_id)
+                if not is_owner_or_co_owner(sponsor):
+                    return "Select an Owner or Co-owner for this Editor."
+                target.editor_for_id = sponsor.id
         else:
             target.editor_for_id = None
     elif is_co_owner(actor):
@@ -418,6 +483,11 @@ def auth_template_helpers():
         "can_view_place": can_view_place,
         "can_manage_users": can_manage_users,
         "can_manage_user": can_manage_user,
+        "can_transfer_item": can_transfer_item,
+        "can_show_item_transfer": can_show_item_transfer,
+        "item_transfer_targets": item_transfer_targets,
+        "item_line_owner_options": item_line_owner_options,
+        "line_root_users": line_root_users,
         "role_label": role_label,
         "theme": user_theme(getattr(g, "user", None)),
     }
@@ -556,6 +626,8 @@ def update_user_role(user_id):
         abort(403)
 
     target = User.query.get_or_404(user_id)
+    if not can_manage_user(g.user, target):
+        abort(403)
     new_role = request.form.get("role", ROLE_READER)
     sponsor_raw = request.form.get("editor_for_id", "")
     editor_for_id = int(sponsor_raw) if sponsor_raw else None

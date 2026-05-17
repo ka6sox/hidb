@@ -241,6 +241,146 @@ def test_editor_can_use_sponsor_private_place_for_items(client, auth, app):
         assert item.place_id == place_id
 
 
+def item_update_form(place_id, name="Updated", creator_id=None):
+    data = {
+        "name": name,
+        "serial_no": "",
+        "description": "Updated description",
+        "qty": "1",
+        "cost": "",
+        "place_id": str(place_id),
+        "sublocation": "",
+        "tags": "",
+        "photo": (BytesIO(b""), ""),
+    }
+    if creator_id is not None:
+        data["creator_id"] = str(creator_id)
+    return data
+
+
+def test_owner_can_edit_co_owner_item(client, auth, app):
+    with app.app_context():
+        place = Place(name="Co-owner Place", creator_id=2)
+        db.session.add(place)
+        db.session.commit()
+        item = add_item("Co-owner Item", creator_id=2, place_id=place.id)
+        item_id = item.id
+        place_id = place.id
+
+    auth.login()
+    response = client.post(
+        f"/items/{item_id}/update",
+        data=item_update_form(place_id, name="Owner Updated"),
+    )
+    assert response.headers["Location"].endswith("/items")
+    with app.app_context():
+        assert Item.query.get(item_id).name == "Owner Updated"
+
+
+def test_owner_can_delete_co_owner_item(client, auth, app):
+    with app.app_context():
+        place = Place(name="Co-owner Place", creator_id=2)
+        db.session.add(place)
+        db.session.commit()
+        item = add_item("Co-owner Item", creator_id=2, place_id=place.id)
+        item_id = item.id
+
+    auth.login()
+    response = client.post(f"/items/{item_id}/delete")
+    assert response.headers["Location"].endswith("/items")
+    with app.app_context():
+        assert Item.query.get(item_id) is None
+
+
+def test_co_owner_cannot_edit_other_co_owner_item(client, auth, app):
+    with app.app_context():
+        add_user("co2", "co2pass", "co_owner")
+        place = Place(name="Other Co Place", creator_id=3)
+        db.session.add(place)
+        db.session.commit()
+        item = add_item("Other Co Item", creator_id=3, place_id=place.id)
+        item_id = item.id
+
+    auth.login("other", "other")
+    response = client.get(f"/items/{item_id}/update")
+    assert response.status_code == 403
+
+
+def test_co_owner_can_transfer_item_to_another_co_owner(client, auth, app):
+    with app.app_context():
+        add_user("co2", "co2pass", "co_owner")
+        place = Place(name="Co-owner Place", creator_id=2)
+        db.session.add(place)
+        db.session.commit()
+        item = add_item("Transfer Me", creator_id=2, place_id=place.id)
+        item_id = item.id
+        place_id = place.id
+
+    auth.login("other", "other")
+    response = client.post(
+        f"/items/{item_id}/update",
+        data=item_update_form(place_id, creator_id=3),
+    )
+    assert response.headers["Location"].endswith("/items")
+    with app.app_context():
+        assert Item.query.get(item_id).creator_id == 3
+
+
+def test_owner_can_transfer_co_owner_item_to_owner_line(client, auth, app):
+    with app.app_context():
+        place = Place(name="Co-owner Place", creator_id=2)
+        db.session.add(place)
+        db.session.commit()
+        item = add_item("Transfer Me", creator_id=2, place_id=place.id)
+        item_id = item.id
+        place_id = place.id
+
+    auth.login()
+    response = client.post(
+        f"/items/{item_id}/update",
+        data=item_update_form(place_id, creator_id=1),
+    )
+    assert response.headers["Location"].endswith("/items")
+    with app.app_context():
+        assert Item.query.get(item_id).creator_id == 1
+
+
+def test_co_owner_cannot_transfer_other_co_owner_item(client, auth, app):
+    with app.app_context():
+        add_user("co2", "co2pass", "co_owner")
+        place = Place(name="Other Co Place", creator_id=3)
+        db.session.add(place)
+        db.session.commit()
+        item = add_item("Not Mine", creator_id=3, place_id=place.id)
+        item_id = item.id
+        place_id = place.id
+
+    auth.login("other", "other")
+    response = client.get(f"/items/{item_id}/update")
+    assert response.status_code == 403
+
+
+def test_editor_cannot_transfer_item_ownership(client, auth, app):
+    with app.app_context():
+        add_user("editor", "editorpass", "editor", editor_for_id=1)
+        add_user("co2", "co2pass", "co_owner")
+        owner_place = Place(name="Owner Place", creator_id=1)
+        db.session.add(owner_place)
+        db.session.commit()
+        item = add_item("Owner Item", creator_id=1, place_id=owner_place.id)
+        item_id = item.id
+        place_id = owner_place.id
+
+    auth.login("editor", "editorpass")
+    response = client.post(
+        f"/items/{item_id}/update",
+        data=item_update_form(place_id, creator_id=3),
+    )
+    assert response.headers["Location"].endswith("/items")
+    with app.app_context():
+        assert Item.query.get(item_id).creator_id == 1
+
+
 def test_only_owner_can_reset_other_passwords(client, auth):
     auth.login("other", "other")
     response = client.post(
