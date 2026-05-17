@@ -216,6 +216,28 @@ def test_co_owner_can_create_reader_and_editor(client, auth, app):
         assert editor_user.editor_for_id == 2
 
 
+def test_co_owner_users_page_lists_all_users(client, auth, app):
+    auth.login("other", "other")
+    with app.app_context():
+        db.session.add(
+            User(
+                username="other_line_editor",
+                password=generate_password_hash("password123"),
+                role="editor",
+                editor_for_id=1,
+                is_active=True,
+                password_updated_at=User.query.get(1).password_updated_at,
+            ),
+        )
+        db.session.commit()
+
+    response = client.get("/auth/users")
+    assert response.status_code == 200
+    assert b"test" in response.data
+    assert b"other" in response.data
+    assert b"other_line_editor" in response.data
+
+
 def test_co_owner_cannot_create_co_owner(client, auth):
     auth.login("other", "other")
     response = client.post(
