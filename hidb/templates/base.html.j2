@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>
     (function () {
-      var theme = {{ theme|tojson }};
-      if (theme === "dark" || theme === "light") {
-        document.documentElement.dataset.theme = theme;
+      var preference = {{ theme|tojson }};
+      var effective;
+      if (preference === "dark" || preference === "light") {
+        effective = preference;
+      } else if (preference === "system" && window.matchMedia) {
+        effective = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        document.documentElement.dataset.theme = "dark";
+        effective = "dark";
       } else {
-        document.documentElement.dataset.theme = "light";
+        effective = "light";
       }
+      document.documentElement.dataset.theme = effective;
     })();
   </script>
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
@@ -44,11 +48,13 @@
         </ul>
         <div class="navbar-text d-flex align-items-center gap-2 flex-wrap">
           <button type="button" id="theme-toggle" class="btn btn-theme-outline btn-sm theme-toggle-btn"
-            aria-label="Toggle light/dark theme"
+            aria-label="Change theme (current: {{ theme or 'dark' }})"
             data-preferences-url="{{ url_for('auth.update_preferences') }}"
-            title="Toggle theme">
-            <span class="theme-icon-sun" {% if theme != 'dark' %}hidden{% endif %} aria-hidden="true">&#9728;</span>
-            <span class="theme-icon-moon" {% if theme == 'dark' %}hidden{% endif %} aria-hidden="true">&#9789;</span>
+            data-theme-preference="{{ theme or 'dark' }}"
+            title="Theme: {{ theme or 'dark' }} (click to change)">
+            <span class="theme-icon-sun" {% if theme != 'light' %}hidden{% endif %} aria-hidden="true">&#9728;</span>
+            <span class="theme-icon-moon" {% if theme != 'dark' %}hidden{% endif %} aria-hidden="true">&#9789;</span>
+            <span class="theme-icon-system" {% if theme != 'system' %}hidden{% endif %} aria-hidden="true">&#9681;</span>
           </button>
           <span class="text-muted small">{{ g.user.username }} · {{ role_label(g.user.role) }}</span>
           <a href="{{ url_for('auth.change_password') }}" class="action small">Password</a>

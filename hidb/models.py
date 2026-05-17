@@ -128,6 +128,18 @@ class Place(db.Model):
         return f"<Place {self.name!r}>"
 
 
+class Unit(db.Model):
+    __tablename__ = "units"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+
+    items: Mapped[List["Item"]] = relationship(back_populates="unit")
+
+    def __repr__(self) -> str:
+        return f"<Unit {self.name!r}>"
+
+
 class Item(db.Model):
     __tablename__ = "items"
 
@@ -138,6 +150,9 @@ class Item(db.Model):
     place_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("places.id"), nullable=False, index=True
     )
+    unit_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("units.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
     name: Mapped[str] = mapped_column(Text, nullable=False)
     serial_no: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -145,7 +160,6 @@ class Item(db.Model):
     qty: Mapped[int] = mapped_column(Integer, nullable=False)
     cost: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     sublocation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    photo: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     date_added: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
     )
@@ -155,6 +169,12 @@ class Item(db.Model):
 
     creator: Mapped["User"] = relationship(back_populates="items")
     place: Mapped["Place"] = relationship(back_populates="items")
+    unit: Mapped[Optional["Unit"]] = relationship(back_populates="items")
+    photos: Mapped[List["ItemPhoto"]] = relationship(
+        back_populates="item",
+        cascade="all, delete-orphan",
+        order_by="ItemPhoto.sort_order",
+    )
     tags: Mapped[List["Tag"]] = relationship(
         secondary=item_tags,
         back_populates="items",
@@ -163,6 +183,28 @@ class Item(db.Model):
 
     def __repr__(self) -> str:
         return f"<Item {self.name}>"
+
+
+class ItemPhoto(db.Model):
+    __tablename__ = "item_photos"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    item_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("items.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    filename: Mapped[str] = mapped_column(Text, nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+
+    item: Mapped["Item"] = relationship(back_populates="photos")
+
+    def __repr__(self) -> str:
+        return f"<ItemPhoto item={self.item_id} {self.filename!r}>"
 
 
 class Tag(db.Model):

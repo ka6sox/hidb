@@ -23,8 +23,8 @@ function csrfToken() {
   return input ? input.value : "";
 }
 
-function bindPlaceCreateForm(modal, modalBody) {
-  var form = document.getElementById("place-create-form");
+function bindEmbedCreateForm(formId, selectId, modal, modalBody) {
+  var form = document.getElementById(formId);
   if (!form) {
     return;
   }
@@ -48,7 +48,7 @@ function bindPlaceCreateForm(modal, modalBody) {
       })
       .then(function(result) {
         if (result.ok && result.body.ok) {
-          var select = document.getElementById("place_id");
+          var select = document.getElementById(selectId);
           var option = document.createElement("option");
           option.value = result.body.id;
           option.textContent = result.body.label;
@@ -59,25 +59,55 @@ function bindPlaceCreateForm(modal, modalBody) {
         }
         if (result.body.html) {
           modalBody.innerHTML = result.body.html;
-          bindPlaceCreateForm(modal, modalBody);
+          bindEmbedCreateForm(formId, selectId, modal, modalBody);
         }
       });
   });
 }
 
-function currentTheme() {
-  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+var THEME_CYCLE = ["light", "dark", "system"];
+
+function resolveEffectiveTheme(preference) {
+  if (preference === "light" || preference === "dark") {
+    return preference;
+  }
+  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  }
+  return "light";
 }
 
-function applyTheme(theme) {
-  document.documentElement.dataset.theme = theme;
+function nextThemePreference(current) {
+  var idx = THEME_CYCLE.indexOf(current);
+  if (idx === -1) {
+    return "light";
+  }
+  return THEME_CYCLE[(idx + 1) % THEME_CYCLE.length];
+}
+
+function updateThemeIcons(preference) {
   var sun = document.querySelector(".theme-icon-sun");
   var moon = document.querySelector(".theme-icon-moon");
+  var system = document.querySelector(".theme-icon-system");
   if (sun) {
-    sun.hidden = theme !== "dark";
+    sun.hidden = preference !== "light";
   }
   if (moon) {
-    moon.hidden = theme !== "light";
+    moon.hidden = preference !== "dark";
+  }
+  if (system) {
+    system.hidden = preference !== "system";
+  }
+}
+
+function applyThemePreference(preference) {
+  document.documentElement.dataset.theme = resolveEffectiveTheme(preference);
+  updateThemeIcons(preference);
+  var toggle = document.getElementById("theme-toggle");
+  if (toggle) {
+    toggle.setAttribute("data-theme-preference", preference);
+    toggle.title = "Theme: " + preference + " (click to change)";
+    toggle.setAttribute("aria-label", "Change theme (current: " + preference + ")");
   }
 }
 
@@ -87,9 +117,22 @@ function bindThemeToggle() {
     return;
   }
 
+  var preference = toggle.getAttribute("data-theme-preference") || "dark";
+  applyThemePreference(preference);
+
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function() {
+      var current = toggle.getAttribute("data-theme-preference");
+      if (current === "system") {
+        applyThemePreference("system");
+      }
+    });
+  }
+
   toggle.addEventListener("click", function() {
-    var next = currentTheme() === "dark" ? "light" : "dark";
-    applyTheme(next);
+    var current = toggle.getAttribute("data-theme-preference") || "dark";
+    var next = nextThemePreference(current);
+    applyThemePreference(next);
 
     var url = toggle.getAttribute("data-preferences-url");
     if (!url) {
@@ -105,33 +148,66 @@ function bindThemeToggle() {
         "X-CSRF-Token": csrfToken(),
       },
       body: data,
+    }).then(function() {
+      toggle.setAttribute("data-theme-preference", next);
     });
+  });
+}
+
+function bindEmbedModal(linkId, modalId, bodyId, formId, selectId) {
+  var link = document.getElementById(linkId);
+  var modalEl = document.getElementById(modalId);
+  if (!link || !modalEl) {
+    return;
+  }
+
+  var modal = new bootstrap.Modal(modalEl);
+  var modalBody = document.getElementById(bodyId);
+
+  link.addEventListener("click", function(e) {
+    e.preventDefault();
+    modalBody.innerHTML = '<p class="text-muted mb-0">Loading…</p>';
+    modal.show();
+
+    fetch(link.href)
+      .then(function(response) { return response.text(); })
+      .then(function(html) {
+        modalBody.innerHTML = html;
+        bindEmbedCreateForm(formId, selectId, modal, modalBody);
+      });
+  });
+}
+
+function bindPhotoReorder() {
+  var grid = document.getElementById("photo-grid");
+  if (!grid) {
+    return;
+  }
+
+  grid.addEventListener("click", function(e) {
+    var card = e.target.closest(".col-6, .col-md-4, .col-lg-3");
+    if (!card) {
+      return;
+    }
+    if (e.target.classList.contains("photo-move-up")) {
+      var prev = card.previousElementSibling;
+      if (prev) {
+        grid.insertBefore(card, prev);
+      }
+    }
+    if (e.target.classList.contains("photo-move-down")) {
+      var next = card.nextElementSibling;
+      if (next) {
+        grid.insertBefore(next, card);
+      }
+    }
   });
 }
 
 $(document).ready(function() {
   $("input.currency").currencyInput();
   bindThemeToggle();
-
-  var addPlaceLink = document.getElementById("add-place-link");
-  var modalEl = document.getElementById("placeCreateModal");
-  if (!addPlaceLink || !modalEl) {
-    return;
-  }
-
-  var modal = new bootstrap.Modal(modalEl);
-  var modalBody = document.getElementById("place-create-modal-body");
-
-  addPlaceLink.addEventListener("click", function(e) {
-    e.preventDefault();
-    modalBody.innerHTML = '<p class="text-muted mb-0">Loading…</p>';
-    modal.show();
-
-    fetch(addPlaceLink.href)
-      .then(function(response) { return response.text(); })
-      .then(function(html) {
-        modalBody.innerHTML = html;
-        bindPlaceCreateForm(modal, modalBody);
-      });
-  });
+  bindEmbedModal("add-place-link", "placeCreateModal", "place-create-modal-body", "place-create-form", "place_id");
+  bindEmbedModal("add-unit-link", "unitCreateModal", "unit-create-modal-body", "unit-create-form", "unit_id");
+  bindPhotoReorder();
 });

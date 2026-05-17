@@ -1,0 +1,15 @@
+{% if can_create_item(g.user) %}
+<div class="modal fade" id="unitCreateModal" tabindex="-1" aria-labelledby="unitCreateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="unitCreateModalLabel">Add a unit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="unit-create-modal-body">
+        <p class="text-muted mb-0">Loading…</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}

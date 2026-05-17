@@ -1,5 +1,5 @@
 {% extends 'base.html.j2' %}
-{% from '_macros.html.j2' import page_header %}
+{% from '_macros.html.j2' import page_header, item_thumb %}
 
 {% block title %}Edit "{{ item['name'] }}"{% endblock %}
 {% block header %}{{ page_header('Edit item', item.name) }}{% endblock %}
@@ -8,7 +8,7 @@
 {% if places|length < 1 %}
 <div class="alert alert-danger">You have not defined any places yet. <a href="{{ url_for('places.create') }}">Add a place first</a>.</div>
 {% else %}
-<form method="post" enctype="multipart/form-data" class="card">
+<form method="post" enctype="multipart/form-data" class="card mb-4">
   <div class="card-body">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <div class="row g-3">
@@ -24,12 +24,29 @@
         <label for="qty" class="form-label">Quantity <span class="text-danger">*</span></label>
         <input name="qty" id="qty" type="number" class="form-control" value="{{ request.form.get('qty', item['qty']) }}" required>
       </div>
+      <div class="col-md-4">
+        <label for="unit_id" class="form-label">Unit</label>
+        <select name="unit_id" id="unit_id" class="form-select">
+          <option value="">— None —</option>
+          {% for u in units %}
+          <option value="{{ u.id }}" {% if (request.form.get('unit_id', item['unit_id'] or '')|string) == u.id|string %}selected{% endif %}>{{ u.label }}</option>
+          {% endfor %}
+        </select>
+        {% if can_create_item(g.user) %}
+        <div class="form-text"><a class="action" href="{{ url_for('units.create', embed=1) }}" id="add-unit-link">Add a unit</a></div>
+        {% endif %}
+      </div>
       <div class="col-md-3">
         <label for="cost" class="form-label">Cost</label>
         <input name="cost" class="form-control currency" id="cost" type="number" min="0.01" step="0.01"
           value="{% if request.form.get('cost') or (item['cost'] is string and item['cost']) or (item['cost'] is float and item['cost'] > 0.0) %}{{ '%.2f'|format(request.form.get('cost') or item['cost']) }}{% endif %}">
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4">
+        <label for="date_acquired" class="form-label">Date acquired</label>
+        <input name="date_acquired" type="date" class="form-control" id="date_acquired"
+          value="{{ request.form.get('date_acquired', date_acquired_value) }}">
+      </div>
+      <div class="col-md-8">
         <label for="place_id" class="form-label">Place <span class="text-danger">*</span></label>
         <select name="place_id" id="place_id" class="form-select" required>
           {% for p in places %}
@@ -43,7 +60,6 @@
       <div class="col-12">
         <label for="sublocation" class="form-label">Sublocation</label>
         <input name="sublocation" class="form-control" id="sublocation" value="{{ request.form.get('sublocation', item['sublocation'] or '') }}">
-        <div class="form-text">Optional detail inside the selected place.</div>
       </div>
       <div class="col-12">
         <label for="tags" class="form-label">Tags</label>
@@ -54,8 +70,9 @@
         <textarea name="description" class="form-control" id="description" rows="4" required>{{ request.form.get('description', item['description'] or '') }}</textarea>
       </div>
       <div class="col-12">
-        <label for="photo" class="form-label">Update photo</label>
-        <input type="file" name="photo" class="form-control" id="photo">
+        <label for="photos" class="form-label">Add photos</label>
+        <input type="file" name="photos" class="form-control" id="photos" accept="image/*" multiple>
+        <div class="form-text">Up to 10 total. First in list below is the cover.</div>
       </div>
     </div>
   </div>
@@ -64,6 +81,47 @@
     <a href="{{ url_for('items.details', id=item['id']) }}" class="btn btn-theme-outline">Cancel</a>
   </div>
 </form>
+
+{% if item['photos'] %}
+<div class="card">
+  <div class="card-header">Photos (drag order: use Move up/down)</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('items.reorder_photos', item_id=item['id']) }}" id="photo-reorder-form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <div class="row g-3" id="photo-grid">
+        {% for photo in item['photos'] %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card h-100">
+            {{ item_thumb(photo.filename, item.name) }}
+            <div class="card-body p-2">
+              <input type="hidden" name="photo_order" value="{{ photo.id }}">
+              {% if loop.first %}<span class="badge bg-secondary mb-1">Cover</span>{% endif %}
+              <div class="d-flex flex-wrap gap-1">
+                {% if not loop.first %}
+                <button type="button" class="btn btn-sm btn-theme-outline photo-move-up">Up</button>
+                {% endif %}
+                {% if not loop.last %}
+                <button type="button" class="btn btn-sm btn-theme-outline photo-move-down">Down</button>
+                {% endif %}
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                  formaction="{{ url_for('items.delete_photo', item_id=item['id'], photo_id=photo.id) }}"
+                  formmethod="post"
+                  onclick="return confirm('Delete this photo?');">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-3">
+        <button type="submit" class="btn btn-secondary btn-sm">Save photo order</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
 {% include 'items/_place_modal.html.j2' %}
+{% include 'items/_unit_modal.html.j2' %}
 {% endif %}
 {% endblock %}

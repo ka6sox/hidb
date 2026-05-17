@@ -2,9 +2,10 @@ import re
 
 from flask import Blueprint, flash, render_template, request
 from sqlalchemy import exists, false, or_, select
+from sqlalchemy.orm import joinedload
 
 from hidb.auth import login_required
-from hidb.items import item_location_path, tag_list
+from hidb.items import format_qty_display, item_location_path, tag_list
 from hidb.models import Item, Tag, item_tags
 from hidb.places import (
     descendant_place_ids,
@@ -75,30 +76,41 @@ def build_search_query(terms: list[str], place_ids: list[int] | None):
 
     return query.distinct()
 
+def primary_photo(item: Item) -> str | None:
+    if not item.photos:
+        return None
+    photos = sorted(item.photos, key=lambda p: (p.sort_order, p.id))
+    return photos[0].filename if photos else None
+
 
 def rows_to_results(rows):
     paths = place_paths_for_ids([r.place_id for r in rows])
-    return [
-        {
-            "id": r.id,
-            "name": r.name,
-            "serial_no": r.serial_no,
-            "description": r.description,
-            "qty": r.qty,
-            "cost": r.cost,
-            "date_added": r.date_added,
-            "creator_id": r.creator_id,
-            "photo": r.photo,
-            "sublocation": r.sublocation,
-            "tags": sorted(t.name for t in r.tags),
-            "tag_list": tag_list(r.tags),
-            "place_path": paths.get(r.place_id, ""),
-            "location_path": item_location_path(
-                paths.get(r.place_id, ""), r.sublocation
-            ),
-        }
-        for r in rows
-    ]
+    results = []
+    for r in rows:
+        unit_name = r.unit.name if r.unit else None
+        results.append(
+            {
+                "id": r.id,
+                "name": r.name,
+                "serial_no": r.serial_no,
+                "description": r.description,
+                "qty": r.qty,
+                "qty_display": format_qty_display(r.qty, unit_name),
+                "cost": r.cost,
+                "date_added": r.date_added,
+                "date_acquired": r.date_acquired,
+                "creator_id": r.creator_id,
+                "photo": primary_photo(r),
+                "sublocation": r.sublocation,
+                "tags": sorted(t.name for t in r.tags),
+                "tag_list": tag_list(r.tags),
+                "place_path": paths.get(r.place_id, ""),
+                "location_path": item_location_path(
+                    paths.get(r.place_id, ""), r.sublocation
+                ),
+            }
+        )
+    return results
 
 
 def search_form_context():
@@ -124,6 +136,8 @@ def index():
 @bp.route("/search/run_search", methods=("POST",))
 @login_required
 def run_search():
+    from sqlalchemy.orm import joinedload as jl
+
     q = request.form.get("q", "")
     terms = parse_search_terms(q)
     raw_place_ids = request.form.getlist("places")
@@ -145,7 +159,12 @@ def run_search():
         flash("Enter a search term or filter by place.")
         return render_template("search/index.html.j2", **ctx)
 
-    rows = build_search_query(terms, place_ids).order_by(Item.date_added.desc()).all()
+    query = build_search_query(terms, place_ids).options(
+        jl(Item.photos),
+        jl(Item.unit),
+        jl(Item.tags),
+    )
+    rows = query.order_by(Item.date_added.desc()).all()
 
     if len(rows) == 0:
         flash("No matching items were found.")
