@@ -260,6 +260,20 @@ def role_label(role: str | None) -> str:
     }.get(role, "Unknown")
 
 
+def line_owner_label(user: User | None) -> str:
+    if user is None:
+        return ""
+    return f"{user.username} ({role_label(user.role)})"
+
+
+def line_owner_labels_for(creator_ids) -> dict[int, str]:
+    ids = {creator_id for creator_id in creator_ids if creator_id is not None}
+    if not ids:
+        return {}
+    users = User.query.filter(User.id.in_(ids)).all()
+    return {user.id: line_owner_label(user) for user in users}
+
+
 def owner_sponsor_options():
     return (
         User.query.filter(User.role.in_(OWNER_ROLES), User.is_active.is_(True))

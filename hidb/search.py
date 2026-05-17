@@ -4,7 +4,7 @@ from flask import Blueprint, flash, render_template, request
 from sqlalchemy import exists, false, or_, select
 from sqlalchemy.orm import joinedload
 
-from hidb.auth import login_required
+from hidb.auth import line_owner_labels_for, login_required
 from hidb.items import format_qty_display, item_location_path, tag_list
 from hidb.models import Item, Tag, item_tags
 from hidb.places import (
@@ -85,6 +85,7 @@ def primary_photo(item: Item) -> str | None:
 
 def rows_to_results(rows):
     paths = place_paths_for_ids([r.place_id for r in rows])
+    owner_labels = line_owner_labels_for(r.creator_id for r in rows)
     results = []
     for r in rows:
         unit_name = r.unit.name if r.unit else None
@@ -108,6 +109,7 @@ def rows_to_results(rows):
                 "location_path": item_location_path(
                     paths.get(r.place_id, ""), r.sublocation
                 ),
+                "line_owner": owner_labels.get(r.creator_id, ""),
             }
         )
     return results

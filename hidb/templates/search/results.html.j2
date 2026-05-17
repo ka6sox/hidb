@@ -13,6 +13,7 @@
           <th>Item</th>
           <th>Qty</th>
           <th>Location</th>
+          <th>Owner</th>
           <th>Tags</th>
           <th>Actions</th>
         </tr>
@@ -28,6 +29,7 @@
           </td>
           <td class="align-middle">{{ r['qty'] }}</td>
           <td class="align-middle text-muted">{{ r.location_path }}</td>
+          <td class="align-middle text-muted small">{{ r.line_owner }}</td>
           <td class="align-middle small">{{ r.tag_list }}</td>
           <td class="align-middle">
             {% if can_edit_item(g.user, r) %}

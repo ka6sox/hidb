@@ -47,6 +47,7 @@ def test_search_or_terms_match_any_field(client, auth, app):
 
     results = client.post("/search/run_search", data={"q": "snowboard garage"})
     assert b"3 match" in results.data
+    assert b"test (Owner)" in results.data
     assert b"Snowboard Boots" in results.data
     assert b"Board Wax" in results.data
     assert b"Skis" in results.data

@@ -117,6 +117,7 @@ def test_item_tags_display_search_and_update(client, auth, app):
 
     details = client.get(f"/items/{boots_id}/details")
     assert b"snowboarding, winter gear" in details.data
+    assert b"test (Owner)" in details.data
 
     update = client.post(
         f"/items/{boots_id}/update",

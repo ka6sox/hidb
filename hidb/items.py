@@ -25,6 +25,7 @@ from hidb.auth import (
     can_use_place_for_item,
     item_owner_id_for,
     item_line_owner_options,
+    line_owner_labels_for,
     login_required,
 )
 from hidb.models import Item, ItemPhoto, Place, Tag, db
@@ -130,8 +131,10 @@ def photos_for_dict(item: Item) -> list[dict]:
     ]
 
 
-def item_to_dict(item: Item, path: str) -> dict:
+def item_to_dict(item: Item, path: str, *, owner_labels: dict[int, str] | None = None) -> dict:
     unit_name = item.unit.name if item.unit else None
+    if owner_labels is None:
+        owner_labels = line_owner_labels_for([item.creator_id])
     return {
         "id": item.id,
         "name": item.name,
@@ -153,6 +156,7 @@ def item_to_dict(item: Item, path: str) -> dict:
         "tag_list": tag_list(item.tags),
         "place_path": path,
         "location_path": item_location_path(path, item.sublocation),
+        "line_owner": owner_labels.get(item.creator_id, ""),
     }
 
 
@@ -162,7 +166,11 @@ def get_items(limit=None):
         query = query.limit(limit)
     rows = query.all()
     paths = place_paths_for_ids([r.place_id for r in rows])
-    return [item_to_dict(r, paths.get(r.place_id, "")) for r in rows]
+    owner_labels = line_owner_labels_for(r.creator_id for r in rows)
+    return [
+        item_to_dict(r, paths.get(r.place_id, ""), owner_labels=owner_labels)
+        for r in rows
+    ]
 
 
 def allowed_file_type(filename):
